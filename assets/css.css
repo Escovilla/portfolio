@@ -1,0 +1,165 @@
+#bod {
+	margin: 0;
+	overflow: hidden;
+	background-color: black;
+}
+@font-face {
+	font-family: 'cool'; /* Name the font */
+	src: url('Hyper-Scrypt-master/fonts/HyperScrypt_Web/HyperScrypt-Stencil_web.ttf')
+		format('truetype');
+}
+#landing {
+	height: 130vh;
+}
+#story1 {
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 120vh;
+	z-index: -1;
+	/* Ensure the canvas stays behind other elements */
+}
+
+#nico {
+	font-family: 'cool';
+	font-size: 200px !important;
+	letter-spacing: -1px;
+	font-weight: 1000;
+	position: relative;
+	z-index: 1;
+	color: #00000000; /* Fully transparent text */
+	text-align: right;
+	margin-top: 200px;
+	text-shadow: -5px 0px 10px rgb(104 0 0);
+	opacity: 0; /* Initially hidden */
+}
+/* Keyframes for flicker effect */
+@keyframes flicker {
+	0% {
+		text-shadow: -5px 0px 10px rgb(255, 9, 9);
+	}
+	50% {
+		text-shadow: -5px 0px 20px rgba(188, 15, 15, 0.8);
+	}
+	100% {
+		text-shadow: -5px 0px 10px rgb(104, 0, 0, 0.9);
+	}
+}
+#loader {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	font-family: 'cool';
+	background-color: black;
+	color: white;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	font-size: 2rem;
+	z-index: 1000;
+}
+#content {
+	display: none;
+}
+
+#file {
+	margin-top: 6px;
+	background-color: black;
+}
+progress {
+	/* border-radius: 7px; */
+
+	height: 22px;
+}
+progress::-webkit-progress-bar {
+	background-color: white;
+}
+progress::-webkit-progress-value {
+	background-color: gray;
+	/* border-radius: 7px;
+	box-shadow: 1px 1px 5px 3px rgba(255, 0, 0, 0.8); */
+}
+progress::-moz-progress-bar {
+	/* style rules */
+}
+#bfg {
+	border: 2px solid GREEN; /* Visual debugging */
+}
+#directions {
+	height: 300px;
+	width: 300px;
+	/* background-color: red; */
+	position: absolute;
+	/* bottom: 150px;
+	left: 150px; */
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+}
+#interactions {
+	position: absolute;
+	font-family: cool;
+	padding: 20px;
+	text-align: center;
+	border-radius: 15px;
+	background: transparent;
+	color: rgba(255, 250, 250, 0.644);
+	font-size: 18px;
+	font-weight: bold;
+	text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+	backdrop-filter: blur(5px);
+	-webkit-backdrop-filter: blur(5px);
+	opacity: 0;
+	animation: fadeIn 1.5s ease-in-out forwards;
+}
+.blur-box {
+	font-family: cool;
+	/* width: 300px;
+	padding: 20px;
+	text-align: center;
+	border-radius: 15px;
+	background: rgba(74, 74, 74, 0.2);
+	
+	color: red;
+	font-size: 18px;
+	font-weight: bold; */
+	/* box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); */
+
+	font-size: 26px !important;
+
+	/* width: 500px; */
+	padding: 20px;
+	text-align: center;
+	border-radius: 15px;
+	background: transparent;
+	color: rgba(255, 250, 250, 0.644);
+	font-size: 18px;
+	font-weight: bold;
+	text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+	backdrop-filter: blur(5px);
+	-webkit-backdrop-filter: blur(5px);
+	opacity: 0;
+	animation: fadeIn 1.5s ease-in-out forwards;
+}
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+@keyframes fadeOut {
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+	}
+}
