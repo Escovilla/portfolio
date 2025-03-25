@@ -3,7 +3,11 @@
 	overflow: hidden;
 	background-color: black;
 }
-
+@font-face {
+	font-family: 'cool'; /* Name the font */
+	src: url('Hyper-Scrypt-master/fonts/HyperScrypt_Web/HyperScrypt-Stencil_web.ttf')
+		format('truetype');
+}
 #landing {
 	height: 130vh;
 }
