@@ -196,8 +196,39 @@ document.addEventListener('keyup', (event) => {
 			break;
 	}
 });
+const geometry = new THREE.PlaneGeometry(0.5, 0.3); // Square
+const material = new THREE.MeshBasicMaterial({
+	color: 0xff00ffff, // Blue
+	side: THREE.DoubleSide,
+});
 const loader3 = new THREE.GLTFLoader(loadingManager);
 let helmet3, blackhole;
+loader3.load(
+	'./assets/spaceship_corridor/scene.gltf',
+	function (gltf) {
+		helmet3 = gltf.scene;
+		scene3.add(helmet3);
+
+		// Position and orientation
+		helmet3.position.set(-0.2, -1.5, -2.5); // Adjust as necessary
+		helmet3.rotation.y = THREE.MathUtils.degToRad(90); // 90 degrees in radians
+
+		const helmetClone = helmet3.clone();
+
+		// Rotate the clone in the opposite direction to the original helmet
+		helmetClone.rotation.y = -helmet3.rotation.y;
+		helmetClone.position.x = helmet3.position.x + 0.4; // Small movement on x-axis
+		helmetClone.position.z = helmet3.position.z + 3.2; // S
+
+		scene3.add(helmetClone);
+
+		console.log('Model loaded and positioned.');
+	},
+	undefined,
+	function (error) {
+		console.error('An error occurred while loading the model:', error);
+	}
+);
 const fontLoader = new THREE.FontLoader();
 fontLoader.load('assets/Hyper Scrypt Stencil_Regular.json', function (font) {
 	const texts = [
@@ -242,38 +273,6 @@ fontLoader.load('assets/Hyper Scrypt Stencil_Regular.json', function (font) {
 
 		scene3.add(floatingText);
 	});
-});
-loader3.load(
-	'./assets/spaceship_corridor/scene.gltf',
-	function (gltf) {
-		helmet3 = gltf.scene;
-		scene3.add(helmet3);
-
-		// Position and orientation
-		helmet3.position.set(-0.2, -1.5, -2.5); // Adjust as necessary
-		helmet3.rotation.y = THREE.MathUtils.degToRad(90); // 90 degrees in radians
-
-		const helmetClone = helmet3.clone();
-
-		// Rotate the clone in the opposite direction to the original helmet
-		helmetClone.rotation.y = -helmet3.rotation.y;
-		helmetClone.position.x = helmet3.position.x + 0.4; // Small movement on x-axis
-		helmetClone.position.z = helmet3.position.z + 3.2; // S
-
-		scene3.add(helmetClone);
-
-		console.log('Model loaded and positioned.');
-	},
-	undefined,
-	function (error) {
-		console.error('An error occurred while loading the model:', error);
-	}
-);
-
-const geometry = new THREE.PlaneGeometry(0.5, 0.3); // Square
-const material = new THREE.MeshBasicMaterial({
-	color: 0xff00ffff, // Blue
-	side: THREE.DoubleSide,
 });
 
 loader3.load(
