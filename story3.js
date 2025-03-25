@@ -64,7 +64,7 @@ const loadingManager = new THREE.LoadingManager(
 	}
 );
 
-const lg1 = new THREE.PointLight(0xffffff, 5, 12); //last light
+const lg1 = new THREE.PointLight(0xffffff, 5, 6); //last light
 lg1.position.set(0, -2, -11);
 scene3.add(lg1);
 
