@@ -737,7 +737,7 @@ function animate3() {
 	) {
 		cameraPosition.copy(newPosition);
 	}
-	console.log(cameraPosition);
+	// console.log(cameraPosition);
 	// const cameraPositiond = controls3.getObject().position;
 	// console.log(
 	// 	`Camera Position: { x: ${cameraPositiond.x.toFixed(
