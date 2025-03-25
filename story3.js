@@ -584,8 +584,10 @@ function showInteractionText(message) {
 		interactionText = document.createElement('div');
 		interactionText.id = 'interaction-text';
 		interactionText.style.position = 'absolute';
-		interactionText.style.top = '50%';
-		interactionText.style.left = '50%';
+		// interactionText.style.top = '50%';
+		// interactionText.style.left = '50%';
+		interactionText.style.top = '89%';
+		interactionText.style.left = '21%';
 		interactionText.style.transform = 'translate(-50%, -50%)';
 		interactionText.style.padding = '30px';
 		interactionText.style.textAlign = 'center';
@@ -642,7 +644,7 @@ function animate3() {
 	requestAnimationFrame(animate3);
 
 	// Movement logic relative to the camera's orientation
-	const moveSpeed = 0.1; // Adjust speed as needed
+	const moveSpeed = 0.02; // Adjust speed as needed
 
 	direction.set(0, 0, 0); // Reset direction vector
 
