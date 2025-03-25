@@ -1,6 +1,10 @@
 // Scene setup
 const scene3 = new THREE.Scene();
-
+const loaderElement = document.getElementById('loader');
+const progressBar = document.getElementById('file');
+const loaded = document.getElementById('loaded');
+let loadedModelsCount = 0; // Counter to track loaded models
+const totalModels = 0; // Total number of models to load
 // Movement variables
 const movement = { forward: 0, backward: 0, left: 0, right: 0 };
 const velocity = new THREE.Vector3();
@@ -35,6 +39,29 @@ if (container3) {
 } else {
 	console.error('Element with id="story3" not found.');
 }
+const loadingManager = new THREE.LoadingManager(
+	() => {
+		// All resources are loaded
+		console.log('All assets loaded');
+		loaderElement.style.display = 'none';
+	},
+	(itemUrl, itemsLoaded, itemsTotal) => {
+		// Update progress as each item is loaded
+
+		const progress = (itemsLoaded / itemsTotal) * 100;
+
+		console.log('progress: ', Math.ceil(progress));
+		progressBar.value = Math.ceil(progress); // Update the progress bar
+
+		loaded.innerHTML = `Loading: ${itemUrl} (${itemsLoaded}/${itemsTotal})`;
+		console.log(`Loading: ${itemUrl} (${itemsLoaded}/${itemsTotal})`);
+
+		console.log('progressBar.value: ', progressBar.value);
+	},
+	(url) => {
+		console.error(`There was an error loading: ${url}`);
+	}
+);
 
 const lg1 = new THREE.PointLight(0xffffff, 5, 12); //last light
 lg1.position.set(0, -2, -11);
@@ -136,6 +163,7 @@ document.addEventListener('keydown', (event) => {
 });
 
 document.addEventListener('keydown', (event) => {
+	closeHud();
 	switch (event.code) {
 		case 'KeyW':
 			movement.forward = 1;
@@ -167,7 +195,7 @@ document.addEventListener('keyup', (event) => {
 			break;
 	}
 });
-const loader3 = new THREE.GLTFLoader();
+const loader3 = new THREE.GLTFLoader(loadingManager);
 let helmet3, blackhole;
 const fontLoader = new THREE.FontLoader();
 fontLoader.load('assets/Hyper Scrypt Stencil_Regular.json', function (font) {
@@ -450,11 +478,28 @@ composer.addPass(fxaaPass);
 // }
 
 // **Helper Functions for UI**
+let hud;
+let clicked;
+function openHud() {
+	if (clicked == true && hud != 'na') {
+		controls3.unlock();
+		let hudElement = document.getElementById(hud);
+		hudElement.style.display = 'block';
+	}
+}
+function closeHud() {
+	if (clicked == false && hud != 'na') {
+		let hudElement = document.getElementById(hud);
+		hudElement.style.display = 'none';
+		// hudElement.style.animation = 'fadeOut .3s ease-in-out forwards';
+	}
+}
 
 function createInteractionHandler(camera, movement, objects) {
 	let activeObject = null;
 	let isMovingToTarget = false;
 	const margin = 0.5;
+
 	function update() {
 		const cameraPosition = camera.position;
 		let detectedObject = null;
@@ -479,14 +524,16 @@ function createInteractionHandler(camera, movement, objects) {
 				cameraPosition.z <= maxBounds.z
 			) {
 				detectedObject = obj;
+
 				break; // Stop checking once we find a match
 			}
 		}
 
-		// Show interaction text if in bounds
+		// Show interaction text if in bounds openHud();
 		if (detectedObject) {
 			showInteractionText(
-				`Press K to interact with ${detectedObject.name}`
+				`Press K to interact with ${detectedObject.name}`,
+				detectedObject.hud
 			);
 		} else {
 			hideInteractionText();
@@ -517,6 +564,7 @@ function createInteractionHandler(camera, movement, objects) {
 			// Stop movement when close to target
 			if (cameraPosition.distanceTo(activeObject.targetPosition) < 0.01) {
 				isMovingToTarget = false;
+				console.log(hud);
 				// hideInteractionText();
 			}
 		}
@@ -543,10 +591,11 @@ const objects = [
 
 		targetPosition: new THREE.Vector3(0.689, 0, 3.045),
 		lookAtTarget: new THREE.Vector3(-45.1751, 0, 2.4368),
+		hud: 'about_me',
 	},
 	{
 		name: "\nWhat's this about",
-		bound1: new THREE.Vector3(-0.1, 0, -1.577674370728779),
+		bound1: new THREE.Vector3(-0.06606142045525135, 0, -1.0917),
 		bound2: new THREE.Vector3(-0.0967, 0, -2.712),
 		targetPosition: new THREE.Vector3(
 			-0.15422468241873846,
@@ -554,6 +603,7 @@ const objects = [
 			-2.5802536240156552
 		),
 		lookAtTarget: new THREE.Vector3(30.9751, 0, -2.1368),
+		hud: 'projects',
 	},
 	//  0.03577475078777462, y: 0, z: -9.49814034334179}
 	// -0.21209250697979098, y: 0, z: -9.543560257614152}
@@ -563,6 +613,7 @@ const objects = [
 		bound2: new THREE.Vector3(0.21209250697979098, 0, -10.543560257614152),
 		targetPosition: new THREE.Vector3(13, -10, 13),
 		lookAtTarget: new THREE.Vector3(-20.9751, 0, 10.1368),
+		hud: 'about_this',
 	},
 	// e {x: -0.39069656940946623, y: 0, z: -10.990486328743165}
 	// -0.2857296911021507, y: 0, z: -10.99011140600458
@@ -573,12 +624,14 @@ const objects = [
 		targetPosition: new THREE.Vector3(0.285, 0, -10.99),
 
 		lookAtTarget: new THREE.Vector3(-45.1751, 0, 20.4368),
+		hud: 'na',
 	},
 ];
 // {x: -0.15422468241873846, y: 0, z: -2.2802536240156552}
 // Camera Position: { x: -0.1784, y: 0.0000, z: -2.2633 }
 
-function showInteractionText(message) {
+function showInteractionText(message, hudId) {
+	hud = hudId;
 	let interactionText = document.getElementById('interaction-text');
 	if (!interactionText) {
 		interactionText = document.createElement('div');
@@ -600,21 +653,21 @@ function showInteractionText(message) {
 		interactionText.style.backdropFilter = 'blur(5px)';
 		interactionText.style.webkitBackdropFilter = 'blur(5px)';
 		interactionText.style.opacity = '0';
-		interactionText.style.animation = 'fadeIn .5s ease-in-out forwards';
+		interactionText.style.animation = 'fadeIn .2s ease-in-out forwards';
 		interactionText.style.fontFamily = 'cool';
 		document.body.appendChild(interactionText);
 	}
 	interactionText.innerText = message;
 	interactionText.style.display = 'block';
 	interactionText.style.opacity = '0';
-	interactionText.style.animation = 'fadeIn .5s ease-in-out forwards';
+	interactionText.style.animation = 'fadeIn .2s ease-in-out forwards';
 }
 
 function hideInteractionText() {
 	const interactionText = document.getElementById('interaction-text');
 	if (interactionText) {
 		interactionText.style.opacity = '0';
-		interactionText.style.animation = 'fadeOut .5s ease-in-out forwards';
+		interactionText.style.animation = 'fadeOut .3s ease-in-out forwards';
 		setTimeout(() => {
 			interactionText.style.display = 'none';
 			setTimeout(() => {}, 500);
@@ -627,11 +680,14 @@ function hideInteractionText() {
 document.addEventListener('keydown', (event) => {
 	if (event.key.toLowerCase() === 'k') {
 		movement.interact = true;
+		clicked = true;
+		// openHud();
 	}
 });
 document.addEventListener('keyup', (event) => {
 	if (event.key.toLowerCase() === 'k') {
 		movement.interact = false;
+		clicked = false;
 	}
 });
 const interactionHandler = createInteractionHandler(
