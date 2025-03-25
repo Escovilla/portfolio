@@ -3,6 +3,7 @@ const scene3 = new THREE.Scene();
 const loaderElement = document.getElementById('loader');
 const progressBar = document.getElementById('file');
 const loaded = document.getElementById('loaded');
+loaded.innerHTML = `Loading: stuff if your reading this your internet  or your device sucks`;
 let loadedModelsCount = 0; // Counter to track loaded models
 const totalModels = 0; // Total number of models to load
 // Movement variables
