@@ -392,8 +392,8 @@ function addTouchControls() {
 		bottom: '20px',
 		left: '20px',
 		display: 'grid',
-		gridTemplateColumns: '60px 60px 60px',
-		gridTemplateRows: '60px 60px 60px',
+		gridTemplateColumns: '50px 50px 50px',
+		gridTemplateRows: '50px 50px 50px',
 		gap: '10px',
 		zIndex: '1000',
 		pointerEvents: 'none',
@@ -768,7 +768,7 @@ const fontLoader = new THREE.FontLoader();
 fontLoader.load('assets/Hyper Scrypt Stencil_Regular.json', function (font) {
 	// Create text with standard detail
 	const textGeometry = new THREE.TextGeometry(
-		'Nico Escovilla \nSoftware      \n Engineer        ',
+		'\n                        \nNico Escovilla \n                        ',
 		{
 			font: font,
 			size: 0.1,
@@ -941,6 +941,115 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Add touch controls for mobile devices with simultaneous button presses and looking
+
+// Helper function to open HUD element
+// function openHudElement(hudId) {
+// 	const hudElement = document.getElementById(hudId);
+// 	if (!hudElement) {
+// 		hudTransitionInProgress = false;
+// 		return;
+// 	}
+
+// 	// Pause rendering during HUD transition to prevent stuttering
+// 	if (!isMobile) {
+// 		controls3.unlock();
+// 	}
+
+// 	// Prepare element for animation
+// 	hudElement.style.display = 'block';
+// 	hudElement.style.opacity = '0';
+// 	hudElement.style.transform = 'translateY(20px)';
+
+// 	// Force a reflow to ensure the transition works
+// 	void hudElement.offsetWidth;
+
+// 	// Add transition properties
+// 	hudElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+
+// 	// Use requestAnimationFrame for smoother transitions
+// 	requestAnimationFrame(() => {
+// 		hudElement.style.opacity = '1';
+// 		hudElement.style.transform = 'translateY(0)';
+
+// 		// Update active HUD and clear transition flag after animation completes
+// 		setTimeout(() => {
+// 			activeHud = hudId;
+// 			hudTransitionInProgress = false;
+// 		}, 300);
+// 	});
+// }
+// Change this function name from openHudElement to openHud
+function openHud(hudId) {
+	const hudElement = document.getElementById(hudId);
+	if (!hudElement) {
+		hudTransitionInProgress = false;
+		return;
+	}
+	// Pause rendering during HUD transition to prevent stuttering
+	if (!isMobile) {
+		controls3.unlock();
+	}
+	// Prepare element for animation
+	hudElement.style.display = 'block';
+	hudElement.style.opacity = '0';
+	hudElement.style.transform = 'translateY(20px)';
+	// Force a reflow to ensure the transition works
+	void hudElement.offsetWidth;
+	// Add transition properties
+	hudElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+	// Use requestAnimationFrame for smoother transitions
+	requestAnimationFrame(() => {
+		hudElement.style.opacity = '1';
+		hudElement.style.transform = 'translateY(0)';
+		// Update active HUD and clear transition flag after animation completes
+		setTimeout(() => {
+			activeHud = hudId;
+			hudTransitionInProgress = false;
+		}, 300);
+	});
+}
+// Improved HUD closing with promise for chaining
+function closeHud(isChained = false) {
+	return new Promise((resolve) => {
+		if (!activeHud || activeHud === 'na') {
+			resolve();
+			return;
+		}
+
+		const hudElement = document.getElementById(activeHud);
+		if (!hudElement) {
+			activeHud = null;
+			resolve();
+			return;
+		}
+
+		// Add transition properties if not already set
+		if (!hudElement.style.transition) {
+			hudElement.style.transition =
+				'opacity 0.3s ease, transform 0.3s ease';
+		}
+
+		// Use GPU-accelerated transitions
+		hudElement.style.opacity = '0';
+		hudElement.style.transform = 'translateY(20px)';
+
+		// Only hide after transition completes
+		setTimeout(() => {
+			hudElement.style.display = 'none';
+			const previousHud = activeHud;
+			activeHud = null;
+
+			// If not chained, lock controls again
+			if (!isChained && !isMobile) {
+				requestAnimationFrame(() => {
+					controls3.lock();
+				});
+			}
+
+			resolve(previousHud);
+		}, 300);
+	});
+}
 function addTouchControls() {
 	// Create touch look area (covers most of the screen except the bottom)
 	const touchLookArea = document.createElement('div');
@@ -970,13 +1079,13 @@ function addTouchControls() {
 		const deltaY = e.touches[0].clientY - touchY;
 
 		controls3.getObject().rotation.y -=
-			deltaX * touchLookSensitivity * 0.05;
+			deltaX * touchLookSensitivity * 0.03;
 		const verticalLook =
 			controls3.getObject().rotation.x -
 			deltaY * touchLookSensitivity * 0.01;
 		controls3.getObject().rotation.x = Math.max(
-			-Math.PI / 0.5,
-			Math.min(Math.PI / 0.5, verticalLook)
+			-Math.PI / 0.01,
+			Math.min(Math.PI / 0.01, verticalLook)
 		);
 
 		touchX = e.touches[0].clientX;
@@ -995,11 +1104,11 @@ function addTouchControls() {
 	touchControls.id = 'touch-controls';
 	Object.assign(touchControls.style, {
 		position: 'fixed',
-		bottom: '20px',
+		bottom: '39px',
 		left: '20px',
 		display: 'grid',
-		gridTemplateColumns: '60px 60px 60px',
-		gridTemplateRows: '60px 60px 60px',
+		gridTemplateColumns: '39px 39px 39px',
+		gridTemplateRows: '39px 39px 39px',
 		gap: '10px',
 		zIndex: '1000',
 		pointerEvents: 'none',
@@ -1172,86 +1281,6 @@ function addTouchControls() {
 
 	document.body.appendChild(interactButton);
 	console.log('Touch controls added with multi-touch support');
-}
-
-// Helper function to open HUD element
-function openHudElement(hudId) {
-	const hudElement = document.getElementById(hudId);
-	if (!hudElement) {
-		hudTransitionInProgress = false;
-		return;
-	}
-
-	// Pause rendering during HUD transition to prevent stuttering
-	if (!isMobile) {
-		controls3.unlock();
-	}
-
-	// Prepare element for animation
-	hudElement.style.display = 'block';
-	hudElement.style.opacity = '0';
-	hudElement.style.transform = 'translateY(20px)';
-
-	// Force a reflow to ensure the transition works
-	void hudElement.offsetWidth;
-
-	// Add transition properties
-	hudElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-
-	// Use requestAnimationFrame for smoother transitions
-	requestAnimationFrame(() => {
-		hudElement.style.opacity = '1';
-		hudElement.style.transform = 'translateY(0)';
-
-		// Update active HUD and clear transition flag after animation completes
-		setTimeout(() => {
-			activeHud = hudId;
-			hudTransitionInProgress = false;
-		}, 300);
-	});
-}
-
-// Improved HUD closing with promise for chaining
-function closeHud(isChained = false) {
-	return new Promise((resolve) => {
-		if (!activeHud || activeHud === 'na') {
-			resolve();
-			return;
-		}
-
-		const hudElement = document.getElementById(activeHud);
-		if (!hudElement) {
-			activeHud = null;
-			resolve();
-			return;
-		}
-
-		// Add transition properties if not already set
-		if (!hudElement.style.transition) {
-			hudElement.style.transition =
-				'opacity 0.3s ease, transform 0.3s ease';
-		}
-
-		// Use GPU-accelerated transitions
-		hudElement.style.opacity = '0';
-		hudElement.style.transform = 'translateY(20px)';
-
-		// Only hide after transition completes
-		setTimeout(() => {
-			hudElement.style.display = 'none';
-			const previousHud = activeHud;
-			activeHud = null;
-
-			// If not chained, lock controls again
-			if (!isChained && !isMobile) {
-				requestAnimationFrame(() => {
-					controls3.lock();
-				});
-			}
-
-			resolve(previousHud);
-		}, 300);
-	});
 }
 
 // Optimized UI elements
@@ -1553,7 +1582,7 @@ const interactionHandler = createInteractionHandler(
 const bounds = {
 	minX: -0.7,
 	maxX: 0.7,
-	minZ: -11,
+	minZ: -12,
 	maxZ: 10,
 	minY: 0,
 	maxY: 0,
