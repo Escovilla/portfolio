@@ -182,6 +182,157 @@ let touchY = 0;
 let touchLookSensitivity = 0.1;
 
 // Add touch controls for mobile devices with look functionality
+// function addTouchControls() {
+// 	// Create touch look area (full screen)
+// 	const touchLookArea = document.createElement('div');
+// 	touchLookArea.id = 'touch-look-area';
+// 	Object.assign(touchLookArea.style, {
+// 		position: 'fixed',
+// 		top: '0',
+// 		left: '0',
+// 		width: '100%',
+// 		height: '100%',
+// 		zIndex: '900', // Below the control buttons
+// 		pointerEvents: 'auto',
+// 	});
+
+// 	// Touch events for looking around
+// 	touchLookArea.addEventListener('touchstart', (e) => {
+// 		e.preventDefault();
+// 		touchLookActive = true;
+// 		touchX = e.touches[0].clientX;
+// 		touchY = e.touches[0].clientY;
+// 	});
+
+// 	touchLookArea.addEventListener('touchmove', (e) => {
+// 		if (!touchLookActive) return;
+// 		e.preventDefault();
+
+// 		const deltaX = e.touches[0].clientX - touchX;
+// 		const deltaY = e.touches[0].clientY - touchY;
+
+// 		// Update camera rotation based on touch movement
+// 		controls3.getObject().rotation.y -=
+// 			deltaX * touchLookSensitivity * 0.01;
+
+// 		// Optional: vertical look (limited to prevent flipping)
+// 		const verticalLook =
+// 			controls3.getObject().rotation.x -
+// 			deltaY * touchLookSensitivity * 0.01;
+// 		controls3.getObject().rotation.x = Math.max(
+// 			-Math.PI / 2,
+// 			Math.min(Math.PI / 2, verticalLook)
+// 		);
+
+// 		// Update touch position
+// 		touchX = e.touches[0].clientX;
+// 		touchY = e.touches[0].clientY;
+// 	});
+
+// 	touchLookArea.addEventListener('touchend', (e) => {
+// 		e.preventDefault();
+// 		touchLookActive = false;
+// 	});
+
+// 	document.body.appendChild(touchLookArea);
+
+// 	// Create movement and interaction buttons
+// 	const touchControls = document.createElement('div');
+// 	touchControls.id = 'touch-controls';
+// 	Object.assign(touchControls.style, {
+// 		position: 'fixed',
+// 		bottom: '20px',
+// 		left: '0',
+// 		width: '100%',
+// 		display: 'flex',
+// 		justifyContent: 'center',
+// 		zIndex: '1000',
+// 		pointerEvents: 'none', // Container shouldn't block clicks
+// 	});
+
+// 	// Create control buttons
+// 	const buttons = [
+// 		{
+// 			id: 'move-forward',
+// 			text: '↑',
+// 			action: () => {
+// 				movement.forward = 1;
+// 			},
+// 		},
+// 		{
+// 			id: 'move-left',
+// 			text: '←',
+// 			action: () => {
+// 				movement.left = 1;
+// 			},
+// 		},
+// 		{
+// 			id: 'move-backward',
+// 			text: '↓',
+// 			action: () => {
+// 				movement.backward = 1;
+// 			},
+// 		},
+// 		{
+// 			id: 'move-right',
+// 			text: '→',
+// 			action: () => {
+// 				movement.right = 1;
+// 			},
+// 		},
+// 		{
+// 			id: 'interact',
+// 			text: 'K',
+// 			action: () => {
+// 				movement.interact = true;
+// 				clicked = true;
+// 			},
+// 		},
+// 	];
+
+// 	buttons.forEach((btn) => {
+// 		const button = document.createElement('button');
+// 		button.id = btn.id;
+// 		button.innerText = btn.text;
+// 		Object.assign(button.style, {
+// 			width: '60px',
+// 			height: '60px',
+// 			margin: '0 10px',
+// 			fontSize: '24px',
+// 			borderRadius: '50%',
+// 			backgroundColor: 'rgba(255,255,255,0.3)',
+// 			border: 'none',
+// 			color: 'white',
+// 			pointerEvents: 'auto', // Make button clickable
+// 		});
+
+// 		// Touch events for buttons
+// 		button.addEventListener('touchstart', (e) => {
+// 			e.preventDefault();
+// 			e.stopPropagation(); // Prevent the look control from activating
+// 			btn.action();
+// 		});
+
+// 		button.addEventListener('touchend', (e) => {
+// 			e.preventDefault();
+// 			e.stopPropagation(); // Prevent the look control from activating
+// 			if (btn.id === 'interact') {
+// 				movement.interact = false;
+// 				clicked = false;
+// 			} else {
+// 				// Reset movement
+// 				movement.forward = 0;
+// 				movement.backward = 0;
+// 				movement.left = 0;
+// 				movement.right = 0;
+// 			}
+// 		});
+
+// 		touchControls.appendChild(button);
+// 	});
+
+// 	document.body.appendChild(touchControls);
+// }
 function addTouchControls() {
 	// Create touch look area (full screen)
 	const touchLookArea = document.createElement('div');
@@ -196,7 +347,6 @@ function addTouchControls() {
 		pointerEvents: 'auto',
 	});
 
-	// Touch events for looking around
 	touchLookArea.addEventListener('touchstart', (e) => {
 		e.preventDefault();
 		touchLookActive = true;
@@ -207,15 +357,10 @@ function addTouchControls() {
 	touchLookArea.addEventListener('touchmove', (e) => {
 		if (!touchLookActive) return;
 		e.preventDefault();
-
 		const deltaX = e.touches[0].clientX - touchX;
 		const deltaY = e.touches[0].clientY - touchY;
-
-		// Update camera rotation based on touch movement
 		controls3.getObject().rotation.y -=
 			deltaX * touchLookSensitivity * 0.01;
-
-		// Optional: vertical look (limited to prevent flipping)
 		const verticalLook =
 			controls3.getObject().rotation.x -
 			deltaY * touchLookSensitivity * 0.01;
@@ -223,8 +368,6 @@ function addTouchControls() {
 			-Math.PI / 2,
 			Math.min(Math.PI / 2, verticalLook)
 		);
-
-		// Update touch position
 		touchX = e.touches[0].clientX;
 		touchY = e.touches[0].clientY;
 	});
@@ -233,7 +376,6 @@ function addTouchControls() {
 		e.preventDefault();
 		touchLookActive = false;
 	});
-
 	document.body.appendChild(touchLookArea);
 
 	// Create movement and interaction buttons
@@ -242,51 +384,39 @@ function addTouchControls() {
 	Object.assign(touchControls.style, {
 		position: 'fixed',
 		bottom: '20px',
-		left: '0',
-		width: '100%',
-		display: 'flex',
-		justifyContent: 'center',
+		left: '20px',
+		display: 'grid',
+		gridTemplateColumns: '50px 50px 50px',
+		gridTemplateRows: '50px 50px 50px',
+		gap: '10px',
 		zIndex: '1000',
-		pointerEvents: 'none', // Container shouldn't block clicks
+		pointerEvents: 'none',
 	});
 
-	// Create control buttons
 	const buttons = [
 		{
 			id: 'move-forward',
 			text: '↑',
-			action: () => {
-				movement.forward = 1;
-			},
+			action: () => (movement.forward = 1),
+			style: { gridColumn: '2', gridRow: '1' },
 		},
 		{
 			id: 'move-left',
 			text: '←',
-			action: () => {
-				movement.left = 1;
-			},
+			action: () => (movement.left = 1),
+			style: { gridColumn: '1', gridRow: '2' },
 		},
 		{
 			id: 'move-backward',
 			text: '↓',
-			action: () => {
-				movement.backward = 1;
-			},
+			action: () => (movement.backward = 1),
+			style: { gridColumn: '2', gridRow: '3' },
 		},
 		{
 			id: 'move-right',
 			text: '→',
-			action: () => {
-				movement.right = 1;
-			},
-		},
-		{
-			id: 'interact',
-			text: 'K',
-			action: () => {
-				movement.interact = true;
-				clicked = true;
-			},
+			action: () => (movement.right = 1),
+			style: { gridColumn: '3', gridRow: '2' },
 		},
 	];
 
@@ -297,43 +427,69 @@ function addTouchControls() {
 		Object.assign(button.style, {
 			width: '60px',
 			height: '60px',
-			margin: '0 10px',
 			fontSize: '24px',
 			borderRadius: '50%',
 			backgroundColor: 'rgba(255,255,255,0.3)',
 			border: 'none',
 			color: 'white',
-			pointerEvents: 'auto', // Make button clickable
+			pointerEvents: 'auto',
+			...btn.style,
 		});
 
-		// Touch events for buttons
 		button.addEventListener('touchstart', (e) => {
 			e.preventDefault();
-			e.stopPropagation(); // Prevent the look control from activating
+			e.stopPropagation();
 			btn.action();
 		});
 
 		button.addEventListener('touchend', (e) => {
 			e.preventDefault();
-			e.stopPropagation(); // Prevent the look control from activating
-			if (btn.id === 'interact') {
-				movement.interact = false;
-				clicked = false;
-			} else {
-				// Reset movement
-				movement.forward = 0;
-				movement.backward = 0;
-				movement.left = 0;
-				movement.right = 0;
-			}
+			e.stopPropagation();
+			movement.forward = 0;
+			movement.backward = 0;
+			movement.left = 0;
+			movement.right = 0;
 		});
 
 		touchControls.appendChild(button);
 	});
 
 	document.body.appendChild(touchControls);
-}
 
+	// Create interact button separately on the far right
+	const interactButton = document.createElement('button');
+	interactButton.id = 'interact';
+	interactButton.innerText = 'K';
+	Object.assign(interactButton.style, {
+		position: 'fixed',
+		bottom: '20px',
+		right: '20px',
+		width: '60px',
+		height: '60px',
+		fontSize: '24px',
+		borderRadius: '50%',
+		backgroundColor: 'rgba(255,255,255,0.3)',
+		border: 'none',
+		color: 'white',
+		pointerEvents: 'auto',
+	});
+
+	interactButton.addEventListener('touchstart', (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		movement.interact = true;
+		clicked = true;
+	});
+
+	interactButton.addEventListener('touchend', (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		movement.interact = false;
+		clicked = false;
+	});
+
+	document.body.appendChild(interactButton);
+}
 document.addEventListener('mousedown', () => {
 	controls3.lock();
 });
