@@ -7,14 +7,13 @@ loaded.innerHTML = 'Loading: Initializing...';
 let loadedModelsCount = 0;
 const totalModels = 0;
 
-// Device capability detection
+// Device capability detection - only detect truly low-end devices
 const isMobile =
 	/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
 		navigator.userAgent
 	);
 const isLowEndDevice =
-	isMobile ||
-	(navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+	navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2; // Only consider very low-end
 
 // Movement variables
 const movement = {
@@ -27,24 +26,24 @@ const movement = {
 const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
 
-// Camera setup
+// Camera setup with standard far plane
 const camera3 = new THREE.PerspectiveCamera(
 	75,
 	window.innerWidth / window.innerHeight,
 	0.1,
-	500 // Reduced far plane for better performance
+	500
 );
 camera3.position.set(-0.2, 0, 10);
 
-// Renderer with performance settings
+// Renderer with standard settings
 const renderer3 = new THREE.WebGLRenderer({
-	antialias: !isLowEndDevice, // Only use antialiasing on better devices
+	antialias: !isLowEndDevice,
 	precision: isLowEndDevice ? 'mediump' : 'highp',
 	powerPreference: 'default',
 });
 
-// Adjust pixel ratio for performance
-const pixelRatio = Math.min(window.devicePixelRatio, isLowEndDevice ? 1 : 2);
+// Use device's native pixel ratio
+const pixelRatio = Math.min(window.devicePixelRatio, 2);
 renderer3.setSize(window.innerWidth, window.innerHeight);
 renderer3.setPixelRatio(pixelRatio);
 
@@ -57,24 +56,31 @@ if (container3) {
 	console.error('Element with id="story3" not found.');
 }
 
-// Loading manager with performance monitoring
+// Loading manager with improved progress tracking
 const loadingManager = new THREE.LoadingManager(
 	() => {
 		console.log('All assets loaded');
 		loaderElement.style.display = 'none';
+
+		// Add touch controls for mobile after loading completes
+		if (isMobile) {
+			addTouchControls();
+		}
 	},
 	(itemUrl, itemsLoaded, itemsTotal) => {
 		const progress = (itemsLoaded / itemsTotal) * 100;
 		progressBar.value = Math.ceil(progress);
-		loaded.innerHTML = `Loading: ${itemsLoaded}/${itemsTotal}`;
+		loaded.innerHTML = `Loading: ${itemUrl.split('/').pop()} (${Math.round(
+			progress
+		)}%)`;
+		console.log(`Loading ${itemUrl}: ${Math.round(progress)}%`);
 	},
 	(url) => {
 		console.error(`Error loading: ${url}`);
 	}
 );
 
-// Optimized lighting setup - fewer lights for better performance
-
+// Standard lighting setup
 const lg1 = new THREE.PointLight(0xffffff, 5, 6); //last light
 lg1.position.set(0, -2, -11);
 scene3.add(lg1);
@@ -114,7 +120,6 @@ scene3.add(outsideLight);
 const outsideLight3 = new THREE.PointLight(0xff0000, 7, 20);
 outsideLight3.position.set(-4, 0.1, -4);
 scene3.add(outsideLight3);
-
 // Optimized light flickering
 let flickerTimer = null;
 function flickerLight() {
@@ -124,15 +129,12 @@ function flickerLight() {
 	const flickerDuration = 500;
 
 	// Use a less frequent interval for flickering
-	flickerTimer = setInterval(
-		() => {
-			const randomIntensity = 0.5 + Math.random() * 0.7;
-			lg3.intensity = randomIntensity;
-			lg1.intensity = randomIntensity;
-			lg5.intensity = randomIntensity;
-		},
-		isLowEndDevice ? 150 : 100
-	);
+	flickerTimer = setInterval(() => {
+		const randomIntensity = 0.5 + Math.random() * 0.7;
+		lg3.intensity = randomIntensity;
+		lg1.intensity = randomIntensity;
+		lg5.intensity = randomIntensity;
+	}, 100);
 
 	setTimeout(() => {
 		clearInterval(flickerTimer);
@@ -143,8 +145,8 @@ function flickerLight() {
 	}, flickerDuration);
 }
 
-// Less frequent flickering for better performance
-setInterval(flickerLight, isLowEndDevice ? 10000 : 5000);
+// Standard flickering interval
+setInterval(flickerLight, 5000);
 
 // Controls setup
 const controls3 = new THREE.PointerLockControls(camera3, document.body);
@@ -152,14 +154,16 @@ scene3.add(controls3.getObject());
 
 // Simplified UI handling
 const directions = document.getElementById('directions');
-directions.style.display = 'none';
-setTimeout(() => {
-	directions.style.animation = 'fadeOut 0.5s ease-in-out forwards';
-}, 5000);
+if (directions) {
+	directions.style.display = 'none';
+	setTimeout(() => {
+		directions.style.animation = 'fadeOut 0.5s ease-in-out forwards';
+	}, 5000);
+}
 
 // Event listeners with throttling for better performance
 let keyEventThrottleTimer = null;
-const keyEventThrottleDelay = isLowEndDevice ? 20 : 10;
+const keyEventThrottleDelay = 10;
 
 // Initialize variables needed by interaction system
 let hud = 'na';
@@ -168,7 +172,104 @@ let activeHud = null;
 let interactionTextElement = null;
 let lastInteractionCheck = 0;
 let hudTransitionInProgress = false;
-const interactionCheckInterval = isLowEndDevice ? 200 : 100;
+const interactionCheckInterval = 100;
+
+// Add touch controls for mobile devices
+function addTouchControls() {
+	const touchControls = document.createElement('div');
+	touchControls.id = 'touch-controls';
+	Object.assign(touchControls.style, {
+		position: 'fixed',
+		bottom: '20px',
+		left: '0',
+		width: '100%',
+		display: 'flex',
+		justifyContent: 'center',
+		zIndex: '1000',
+		pointerEvents: 'none', // Container shouldn't block clicks
+	});
+
+	// Create control buttons
+	const buttons = [
+		{
+			id: 'move-forward',
+			text: '↑',
+			action: () => {
+				movement.forward = 1;
+			},
+		},
+		{
+			id: 'move-left',
+			text: '←',
+			action: () => {
+				movement.left = 1;
+			},
+		},
+		{
+			id: 'move-backward',
+			text: '↓',
+			action: () => {
+				movement.backward = 1;
+			},
+		},
+		{
+			id: 'move-right',
+			text: '→',
+			action: () => {
+				movement.right = 1;
+			},
+		},
+		{
+			id: 'interact',
+			text: 'K',
+			action: () => {
+				movement.interact = true;
+				clicked = true;
+			},
+		},
+	];
+
+	buttons.forEach((btn) => {
+		const button = document.createElement('button');
+		button.id = btn.id;
+		button.innerText = btn.text;
+		Object.assign(button.style, {
+			width: '60px',
+			height: '60px',
+			margin: '0 10px',
+			fontSize: '24px',
+			borderRadius: '50%',
+			backgroundColor: 'rgba(255,255,255,0.3)',
+			border: 'none',
+			color: 'white',
+			pointerEvents: 'auto', // Make button clickable
+		});
+
+		// Touch events for buttons
+		button.addEventListener('touchstart', (e) => {
+			e.preventDefault();
+			btn.action();
+		});
+
+		button.addEventListener('touchend', (e) => {
+			e.preventDefault();
+			if (btn.id === 'interact') {
+				movement.interact = false;
+				clicked = false;
+			} else {
+				// Reset movement
+				movement.forward = 0;
+				movement.backward = 0;
+				movement.left = 0;
+				movement.right = 0;
+			}
+		});
+
+		touchControls.appendChild(button);
+	});
+
+	document.body.appendChild(touchControls);
+}
 
 document.addEventListener('mousedown', () => {
 	controls3.lock();
@@ -249,69 +350,138 @@ document.addEventListener('keyup', (event) => {
 	}
 });
 
-// Optimized model loading
+// Enhanced model loading with better error handling and fallbacks
 const loader3 = new THREE.GLTFLoader(loadingManager);
 let helmet3, blackhole;
 
-// Function to load models with appropriate detail level
-function loadModelWithLOD(path, callback) {
+function loadModelWithLOD(path, callback, fallbackCallback) {
+	// Track loading attempt
+	let loadAttempted = false;
+	let loadTimeout;
+
+	// Set a timeout to detect loading failures
+	loadTimeout = setTimeout(() => {
+		if (!loadAttempted) {
+			console.warn(`Loading timeout for ${path}, using fallback`);
+			if (fallbackCallback) fallbackCallback();
+		}
+	}, 15000); // 15 seconds timeout
+
 	loader3.load(
 		path,
 		function (gltf) {
-			// For low-end devices, simplify the model
-			if (isLowEndDevice) {
-				gltf.scene.traverse(function (child) {
-					if (child.isMesh) {
-						// Use simpler materials
-						if (child.material) {
-							child.material.flatShading = true;
-							child.material.needsUpdate = true;
-						}
-					}
-				});
+			loadAttempted = true;
+			clearTimeout(loadTimeout);
+
+			// Try-catch to handle any post-processing errors
+			try {
+				callback(gltf);
+			} catch (e) {
+				console.error('Error in model callback:', e);
+				if (fallbackCallback) fallbackCallback();
 			}
-			callback(gltf);
 		},
-		undefined,
+		// Progress callback - useful for debugging
+		function (xhr) {
+			if (xhr.lengthComputable) {
+				const percentComplete = (xhr.loaded / xhr.total) * 100;
+				console.log(`${path} loading: ${Math.round(percentComplete)}%`);
+			}
+		},
 		function (error) {
-			console.error('An error occurred while loading the model:', error);
+			loadAttempted = true;
+			clearTimeout(loadTimeout);
+			console.error(`An error occurred while loading ${path}:`, error);
+			if (fallbackCallback) fallbackCallback();
 		}
 	);
 }
 
-// Load corridor model
-loadModelWithLOD('./assets/spaceship_corridor/scene.gltf', function (gltf) {
-	helmet3 = gltf.scene;
-	scene3.add(helmet3);
-	helmet3.position.set(-0.2, -1.5, -2.5);
-	helmet3.rotation.y = THREE.MathUtils.degToRad(90);
+// Create simple corridor fallback
+function createCorridorFallback() {
+	// Create a simple corridor with basic geometry
+	const corridorGeometry = new THREE.BoxGeometry(2, 2, 30);
+	const corridorMaterial = new THREE.MeshBasicMaterial({
+		color: 0x333344,
+		side: THREE.BackSide,
+	});
+	const corridor = new THREE.Mesh(corridorGeometry, corridorMaterial);
+	corridor.position.set(0, -1, 0);
+	scene3.add(corridor);
 
-	// Only create clone if not on a low-end device
-	if (!isLowEndDevice) {
+	// Add floor
+	const floorGeometry = new THREE.PlaneGeometry(2, 30);
+	const floorMaterial = new THREE.MeshBasicMaterial({ color: 0x222233 });
+	const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+	floor.rotation.x = -Math.PI / 2;
+	floor.position.set(0, -2, 0);
+	scene3.add(floor);
+
+	console.log('Using corridor fallback geometry');
+}
+
+// Create simple blackhole fallback
+function createBlackholeFallback() {
+	const blackholeGeometry = new THREE.SphereGeometry(10, 16, 16);
+	const blackholeMaterial = new THREE.MeshBasicMaterial({
+		color: 0x000000,
+		transparent: true,
+		opacity: 0.8,
+	});
+	blackhole = new THREE.Mesh(blackholeGeometry, blackholeMaterial);
+	blackhole.position.set(-350, -1, -6);
+	scene3.add(blackhole);
+
+	// Add glow effect
+	const glowGeometry = new THREE.SphereGeometry(12, 16, 16);
+	const glowMaterial = new THREE.MeshBasicMaterial({
+		color: 0x0000ff,
+		transparent: true,
+		opacity: 0.2,
+		side: THREE.BackSide,
+	});
+	const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+	glow.position.copy(blackhole.position);
+	scene3.add(glow);
+
+	console.log('Using blackhole fallback geometry');
+}
+
+// Load corridor model with fallback
+loadModelWithLOD(
+	'./assets/spaceship_corridor/scene.gltf',
+	function (gltf) {
+		helmet3 = gltf.scene;
+		scene3.add(helmet3);
+		helmet3.position.set(-0.2, -1.5, -2.5);
+		helmet3.rotation.y = THREE.MathUtils.degToRad(90);
+
+		// Create clone regardless of device
 		const helmetClone = helmet3.clone();
 		helmetClone.rotation.y = -helmet3.rotation.y;
 		helmetClone.position.x = helmet3.position.x + 0.4;
 		helmetClone.position.z = helmet3.position.z + 3.2;
 		scene3.add(helmetClone);
-	}
-});
+	},
+	createCorridorFallback // Fallback function
+);
 
 // Optimized text loading
 const fontLoader = new THREE.FontLoader();
 fontLoader.load('assets/Hyper Scrypt Stencil_Regular.json', function (font) {
-	// Create text with reduced geometry detail
+	// Create text with standard detail
 	const textGeometry = new THREE.TextGeometry(
 		'Nico Escovilla \nSoftware      \n Engineer        ',
 		{
 			font: font,
 			size: 0.1,
 			height: 0.01,
-			curveSegments: isLowEndDevice ? 4 : 12, // Reduce segments for low-end devices
+			curveSegments: 12,
 			bevelEnabled: true,
 			bevelThickness: 0.001,
 			bevelSize: 0.00009,
 			bevelOffset: 0.00009,
-			bevelSegments: isLowEndDevice ? 3 : 20, // Reduce bevel segments
+			bevelSegments: 20,
 		}
 	);
 
@@ -381,9 +551,10 @@ loadModelWithLOD('./assets/full_screen/scene.gltf', function (gltf) {
 	scene3.add(square);
 });
 
-// Only load blackhole for higher-end devices, or load a simplified version
-if (!isLowEndDevice) {
-	loadModelWithLOD('./assets/blackhole/scene.gltf', function (gltf) {
+// Load blackhole with fallback
+loadModelWithLOD(
+	'./assets/blackhole/scene.gltf',
+	function (gltf) {
 		blackhole = gltf.scene;
 		scene3.add(blackhole);
 		blackhole.position.set(-350, -1, -6);
@@ -391,22 +562,16 @@ if (!isLowEndDevice) {
 		blackhole.rotation.x = THREE.MathUtils.degToRad(30);
 		blackhole.rotation.z = THREE.MathUtils.degToRad(15);
 		blackhole.scale.set(200, 200, 200);
-	});
-} else {
-	// For low-end devices, create a simple placeholder or skip entirely
-	const blackholeGeometry = new THREE.SphereGeometry(5, 16, 16);
-	const blackholeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
-	blackhole = new THREE.Mesh(blackholeGeometry, blackholeMaterial);
-	blackhole.position.set(-350, -1, -6);
-	scene3.add(blackhole);
-}
+	},
+	createBlackholeFallback
+);
 
-// Optimized post-processing for different device capabilities
+// Post-processing setup
 const composer = new THREE.EffectComposer(renderer3);
 const renderPass = new THREE.RenderPass(scene3, camera3);
 composer.addPass(renderPass);
 
-// Only add post-processing effects for higher-end devices
+// Add post-processing effects for all devices except very low-end ones
 let grainPass;
 if (!isLowEndDevice) {
 	// Grain Shader
@@ -443,16 +608,16 @@ if (!isLowEndDevice) {
 	grainPass = new THREE.ShaderPass(grainShader);
 	composer.addPass(grainPass);
 
-	// Add Bloom Effect with reduced quality
+	// Add Bloom Effect
 	const bloomPass = new THREE.UnrealBloomPass(
-		new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2), // Half resolution
-		0.5, // Reduced strength
+		new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2),
+		0.5,
 		0.4,
 		0.1
 	);
 	composer.addPass(bloomPass);
 
-	// Add FXAA with reduced quality
+	// Add FXAA
 	const fxaaPass = new THREE.ShaderPass(THREE.FXAAShader);
 	fxaaPass.uniforms['resolution'].value.set(
 		1 / (window.innerWidth * 0.75),
@@ -650,7 +815,7 @@ function createInteractionHandler(camera, movement, objects) {
 		lastPosition: new THREE.Vector3(),
 		lastDetectedObject: null,
 		lastCheckTime: 0,
-		cacheTTL: isLowEndDevice ? 300 : 200,
+		cacheTTL: 200,
 	};
 
 	function update(currentTime, deltaTime) {
@@ -738,7 +903,9 @@ function createInteractionHandler(camera, movement, objects) {
 
 					if (detectedObject) {
 						showInteractionText(
-							`Press K to interact with ${detectedObject.name}`,
+							`Press ${
+								isMobile ? 'K Button' : 'K'
+							} to interact with ${detectedObject.name}`,
 							detectedObject.hud
 						);
 					} else {
@@ -764,6 +931,7 @@ function createInteractionHandler(camera, movement, objects) {
 				easedProgress
 			);
 
+			// Calculate look direction
 			// Calculate look direction
 			const lookDirection = new THREE.Vector3()
 				.subVectors(activeObject.lookAtTarget, camera.position)
@@ -859,23 +1027,13 @@ const bounds = {
 	maxY: 0,
 };
 
-// Frame-rate independent movement
+// Frame-rate independent movement with standard speed
 let prevTime = performance.now();
-const baseMoveSpeed = 2; // Base speed value
+const baseMoveSpeed = 2; // Standard speed value for all devices
 
-// Optimized animation loop
-let frameSkip = 0;
-const frameSkipThreshold = isLowEndDevice ? 2 : 0; // Skip frames on low-end devices
-
+// Standard animation loop without frame skipping
 function animate3() {
 	requestAnimationFrame(animate3);
-
-	// Skip frames for lower-end devices
-	if (frameSkip < frameSkipThreshold) {
-		frameSkip++;
-		return;
-	}
-	frameSkip = 0;
 
 	// Calculate delta time for frame-rate independent movement
 	const currentTime = performance.now();
@@ -925,8 +1083,8 @@ function animate3() {
 		cameraPosition.copy(newPosition);
 	}
 
-	// Rotate blackhole with reduced computation
-	if (blackhole && !isLowEndDevice) {
+	// Rotate blackhole with standard computation
+	if (blackhole) {
 		const quaternion = new THREE.Quaternion();
 		const tiltAxis = new THREE.Vector3(0, 1, 0);
 		tiltAxis.applyEuler(
@@ -946,12 +1104,11 @@ function animate3() {
 	// Update interactions with current time and delta time
 	interactionHandler.update(currentTime, deltaTime);
 
-	// Update effects only on higher-end devices
+	// Update effects and render
 	if (!isLowEndDevice && grainPass) {
 		grainPass.uniforms.time.value += 0.01;
 		composer.render();
 	} else {
-		// Simple render for low-end devices
 		renderer3.render(scene3, camera3);
 	}
 }
