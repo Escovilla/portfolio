@@ -80,7 +80,7 @@ const loadingManager = new THREE.LoadingManager(
 	}
 );
 
-// Standard lighting setup
+// Standard lighting setup with all original lights
 const lg1 = new THREE.PointLight(0xffffff, 5, 6); //last light
 lg1.position.set(0, -2, -11);
 scene3.add(lg1);
@@ -120,6 +120,7 @@ scene3.add(outsideLight);
 const outsideLight3 = new THREE.PointLight(0xff0000, 7, 20);
 outsideLight3.position.set(-4, 0.1, -4);
 scene3.add(outsideLight3);
+
 // Optimized light flickering
 let flickerTimer = null;
 function flickerLight() {
@@ -174,8 +175,68 @@ let lastInteractionCheck = 0;
 let hudTransitionInProgress = false;
 const interactionCheckInterval = 100;
 
-// Add touch controls for mobile devices
+// Touch look controls variables
+let touchLookActive = false;
+let touchX = 0;
+let touchY = 0;
+let touchLookSensitivity = 0.1;
+
+// Add touch controls for mobile devices with look functionality
 function addTouchControls() {
+	// Create touch look area (full screen)
+	const touchLookArea = document.createElement('div');
+	touchLookArea.id = 'touch-look-area';
+	Object.assign(touchLookArea.style, {
+		position: 'fixed',
+		top: '0',
+		left: '0',
+		width: '100%',
+		height: '100%',
+		zIndex: '900', // Below the control buttons
+		pointerEvents: 'auto',
+	});
+
+	// Touch events for looking around
+	touchLookArea.addEventListener('touchstart', (e) => {
+		e.preventDefault();
+		touchLookActive = true;
+		touchX = e.touches[0].clientX;
+		touchY = e.touches[0].clientY;
+	});
+
+	touchLookArea.addEventListener('touchmove', (e) => {
+		if (!touchLookActive) return;
+		e.preventDefault();
+
+		const deltaX = e.touches[0].clientX - touchX;
+		const deltaY = e.touches[0].clientY - touchY;
+
+		// Update camera rotation based on touch movement
+		controls3.getObject().rotation.y -=
+			deltaX * touchLookSensitivity * 0.01;
+
+		// Optional: vertical look (limited to prevent flipping)
+		const verticalLook =
+			controls3.getObject().rotation.x -
+			deltaY * touchLookSensitivity * 0.01;
+		controls3.getObject().rotation.x = Math.max(
+			-Math.PI / 2,
+			Math.min(Math.PI / 2, verticalLook)
+		);
+
+		// Update touch position
+		touchX = e.touches[0].clientX;
+		touchY = e.touches[0].clientY;
+	});
+
+	touchLookArea.addEventListener('touchend', (e) => {
+		e.preventDefault();
+		touchLookActive = false;
+	});
+
+	document.body.appendChild(touchLookArea);
+
+	// Create movement and interaction buttons
 	const touchControls = document.createElement('div');
 	touchControls.id = 'touch-controls';
 	Object.assign(touchControls.style, {
@@ -248,11 +309,13 @@ function addTouchControls() {
 		// Touch events for buttons
 		button.addEventListener('touchstart', (e) => {
 			e.preventDefault();
+			e.stopPropagation(); // Prevent the look control from activating
 			btn.action();
 		});
 
 		button.addEventListener('touchend', (e) => {
 			e.preventDefault();
+			e.stopPropagation(); // Prevent the look control from activating
 			if (btn.id === 'interact') {
 				movement.interact = false;
 				clicked = false;
@@ -673,7 +736,9 @@ function openHudElement(hudId) {
 	}
 
 	// Pause rendering during HUD transition to prevent stuttering
-	controls3.unlock();
+	if (!isMobile) {
+		controls3.unlock();
+	}
 
 	// Prepare element for animation
 	hudElement.style.display = 'block';
@@ -731,7 +796,7 @@ function closeHud(isChained = false) {
 			activeHud = null;
 
 			// If not chained, lock controls again
-			if (!isChained) {
+			if (!isChained && !isMobile) {
 				requestAnimationFrame(() => {
 					controls3.lock();
 				});
@@ -840,6 +905,7 @@ function createInteractionHandler(camera, movement, objects) {
 		}
 
 		// Only check for new interactions periodically to save performance
+		// Only check for new interactions periodically to save performance
 		if (
 			currentTime - lastInteractionCheck < interactionCheckInterval &&
 			!isMovingToTarget
@@ -931,7 +997,6 @@ function createInteractionHandler(camera, movement, objects) {
 				easedProgress
 			);
 
-			// Calculate look direction
 			// Calculate look direction
 			const lookDirection = new THREE.Vector3()
 				.subVectors(activeObject.lookAtTarget, camera.position)
@@ -1027,9 +1092,9 @@ const bounds = {
 	maxY: 0,
 };
 
-// Frame-rate independent movement with standard speed
+// Frame-rate independent movement with increased speed
 let prevTime = performance.now();
-const baseMoveSpeed = 2; // Standard speed value for all devices
+const baseMoveSpeed = 2; // Increased speed value for all devices
 
 // Standard animation loop without frame skipping
 function animate3() {
