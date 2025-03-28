@@ -681,7 +681,7 @@ document.addEventListener('keydown', (event) => {
 	if (event.key.toLowerCase() === 'k') {
 		movement.interact = true;
 		clicked = true;
-		// openHud();
+		openHud();
 	}
 });
 document.addEventListener('keyup', (event) => {
