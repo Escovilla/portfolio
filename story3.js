@@ -696,39 +696,120 @@ const interactionHandler = createInteractionHandler(
 	objects
 );
 
+// function animate3() {
+// 	requestAnimationFrame(animate3);
+
+// 	// Movement logic relative to the camera's orientation
+// 	const moveSpeed = 0.02; // Adjust speed as needed
+
+// 	direction.set(0, 0, 0); // Reset direction vector
+
+// 	if (movement.forward) direction.z = moveSpeed; // Forward
+// 	if (movement.backward) direction.z = -moveSpeed; // Backward
+// 	if (movement.left) direction.x = -moveSpeed; // Left
+// 	if (movement.right) direction.x = moveSpeed; // Right
+
+// 	// Apply movement in the camera's local space
+// 	controls3.getObject().getWorldDirection(velocity); // Get the direction the camera is facing
+// 	velocity.y = 0; // Ensure no vertical movement
+// 	velocity.normalize(); // Normalize to ensure consistent movement speed
+
+// 	const cameraPosition = controls3.getObject().position;
+// 	const newPosition = cameraPosition.clone();
+
+// 	// Move forward/backward along the camera's Z-axis
+// 	newPosition.addScaledVector(velocity, direction.z);
+
+// 	// Move left/right relative to the camera
+// 	const leftVector = new THREE.Vector3(-velocity.z, 0, velocity.x); // Perpendicular to forward
+// 	newPosition.addScaledVector(leftVector, direction.x);
+
+// 	// Ensure Y-axis remains constant (no vertical movement)
+// 	newPosition.y = cameraPosition.y;
+// 	// console.log(newPosition);
+
+// 	// Check boundaries before applying movement
+// 	if (
+// 		newPosition.x >= bounds.minX &&
+// 		newPosition.x <= bounds.maxX &&
+// 		newPosition.z >= bounds.minZ &&
+// 		newPosition.z <= bounds.maxZ
+// 	) {
+// 		cameraPosition.copy(newPosition);
+// 	}
+// 	// console.log(cameraPosition);
+// 	// const cameraPositiond = controls3.getObject().position;
+// 	// console.log(
+// 	// 	`Camera Position: { x: ${cameraPositiond.x.toFixed(
+// 	// 		4
+// 	// 	)}, y: ${cameraPositiond.y.toFixed(4)}, z: ${cameraPositiond.z.toFixed(
+// 	// 		4
+// 	// 	)} }`
+// 	// );
+// 	// Rotate the black hole if it exists
+// 	if (blackhole) {
+// 		// Compute rotation around the tilted axis
+// 		const quaternion = new THREE.Quaternion(); // Temporary quaternion for rotation
+// 		const tiltAxis = new THREE.Vector3(0, 1, 0); // Y-axis, adjusted for tilt
+
+// 		// Adjust the tilt axis for the current tilt of the blackhole
+// 		tiltAxis.applyEuler(
+// 			new THREE.Euler(
+// 				blackhole.rotation.x, // X tilt
+// 				blackhole.rotation.y, // Y rotation
+// 				blackhole.rotation.z // Z tilt
+// 			)
+// 		);
+
+// 		// Rotate around the computed tilt axis
+// 		quaternion.setFromAxisAngle(tiltAxis, 0.001); // Rotate by 0.01 radians (speed adjustable)
+// 		blackhole.quaternion.multiplyQuaternions(
+// 			quaternion,
+// 			blackhole.quaternion
+// 		);
+// 	}
+
+// 	interactionHandler.update();
+// 	grainPass.uniforms.time.value += 0.01; // Update grain over time
+// 	composer.render();
+// 	// renderer3.render(scene3, camera3);
+// }
+
+let prevTime = performance.now();
+const baseMoveSpeed = 2; // Base speed value (adjust as needed)
+
 function animate3() {
 	requestAnimationFrame(animate3);
 
+	// Calculate delta time for frame-rate independent movement
+	const currentTime = performance.now();
+	const deltaTime = (currentTime - prevTime) / 1000; // Convert to seconds
+	prevTime = currentTime;
+
+	// Frame-rate independent move speed
+	const moveSpeed = baseMoveSpeed * deltaTime;
+
 	// Movement logic relative to the camera's orientation
-	const moveSpeed = 0.02; // Adjust speed as needed
-
 	direction.set(0, 0, 0); // Reset direction vector
-
 	if (movement.forward) direction.z = moveSpeed; // Forward
 	if (movement.backward) direction.z = -moveSpeed; // Backward
 	if (movement.left) direction.x = -moveSpeed; // Left
 	if (movement.right) direction.x = moveSpeed; // Right
 
+	// Rest of your movement code...
 	// Apply movement in the camera's local space
-	controls3.getObject().getWorldDirection(velocity); // Get the direction the camera is facing
-	velocity.y = 0; // Ensure no vertical movement
-	velocity.normalize(); // Normalize to ensure consistent movement speed
+	controls3.getObject().getWorldDirection(velocity);
+	velocity.y = 0;
+	velocity.normalize();
 
 	const cameraPosition = controls3.getObject().position;
 	const newPosition = cameraPosition.clone();
 
-	// Move forward/backward along the camera's Z-axis
 	newPosition.addScaledVector(velocity, direction.z);
-
-	// Move left/right relative to the camera
-	const leftVector = new THREE.Vector3(-velocity.z, 0, velocity.x); // Perpendicular to forward
+	const leftVector = new THREE.Vector3(-velocity.z, 0, velocity.x);
 	newPosition.addScaledVector(leftVector, direction.x);
-
-	// Ensure Y-axis remains constant (no vertical movement)
 	newPosition.y = cameraPosition.y;
-	// console.log(newPosition);
 
-	// Check boundaries before applying movement
 	if (
 		newPosition.x >= bounds.minX &&
 		newPosition.x <= bounds.maxX &&
@@ -737,42 +818,11 @@ function animate3() {
 	) {
 		cameraPosition.copy(newPosition);
 	}
-	// console.log(cameraPosition);
-	// const cameraPositiond = controls3.getObject().position;
-	// console.log(
-	// 	`Camera Position: { x: ${cameraPositiond.x.toFixed(
-	// 		4
-	// 	)}, y: ${cameraPositiond.y.toFixed(4)}, z: ${cameraPositiond.z.toFixed(
-	// 		4
-	// 	)} }`
-	// );
-	// Rotate the black hole if it exists
-	if (blackhole) {
-		// Compute rotation around the tilted axis
-		const quaternion = new THREE.Quaternion(); // Temporary quaternion for rotation
-		const tiltAxis = new THREE.Vector3(0, 1, 0); // Y-axis, adjusted for tilt
 
-		// Adjust the tilt axis for the current tilt of the blackhole
-		tiltAxis.applyEuler(
-			new THREE.Euler(
-				blackhole.rotation.x, // X tilt
-				blackhole.rotation.y, // Y rotation
-				blackhole.rotation.z // Z tilt
-			)
-		);
-
-		// Rotate around the computed tilt axis
-		quaternion.setFromAxisAngle(tiltAxis, 0.001); // Rotate by 0.01 radians (speed adjustable)
-		blackhole.quaternion.multiplyQuaternions(
-			quaternion,
-			blackhole.quaternion
-		);
-	}
-
+	// Rest of your animation code...
 	interactionHandler.update();
-	grainPass.uniforms.time.value += 0.01; // Update grain over time
+	grainPass.uniforms.time.value += 0.01;
 	composer.render();
-	// renderer3.render(scene3, camera3);
 }
 
 window.addEventListener('resize', () => {
