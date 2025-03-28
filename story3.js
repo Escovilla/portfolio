@@ -333,8 +333,10 @@ let touchLookSensitivity = 0.1;
 
 // 	document.body.appendChild(touchControls);
 // }
+// Add touch controls for mobile devices with look functionality
+// Add touch controls for mobile devices with simultaneous button presses and looking
 function addTouchControls() {
-	// Create touch look area (full screen)
+	// Create touch look area (covers most of the screen except the bottom)
 	const touchLookArea = document.createElement('div');
 	touchLookArea.id = 'touch-look-area';
 	Object.assign(touchLookArea.style, {
@@ -342,11 +344,12 @@ function addTouchControls() {
 		top: '0',
 		left: '0',
 		width: '100%',
-		height: '100%',
-		zIndex: '900', // Below the control buttons
+		height: '70%', // Leave bottom area for buttons
+		zIndex: '900',
 		pointerEvents: 'auto',
 	});
 
+	// Touch events for looking around
 	touchLookArea.addEventListener('touchstart', (e) => {
 		e.preventDefault();
 		touchLookActive = true;
@@ -359,15 +362,17 @@ function addTouchControls() {
 		e.preventDefault();
 		const deltaX = e.touches[0].clientX - touchX;
 		const deltaY = e.touches[0].clientY - touchY;
+
 		controls3.getObject().rotation.y -=
-			deltaX * touchLookSensitivity * 0.01;
+			deltaX * touchLookSensitivity * 0.05;
 		const verticalLook =
 			controls3.getObject().rotation.x -
 			deltaY * touchLookSensitivity * 0.01;
 		controls3.getObject().rotation.x = Math.max(
-			-Math.PI / 2,
-			Math.min(Math.PI / 2, verticalLook)
+			-Math.PI / 0.5,
+			Math.min(Math.PI / 0.5, verticalLook)
 		);
+
 		touchX = e.touches[0].clientX;
 		touchY = e.touches[0].clientY;
 	});
@@ -376,9 +381,10 @@ function addTouchControls() {
 		e.preventDefault();
 		touchLookActive = false;
 	});
+
 	document.body.appendChild(touchLookArea);
 
-	// Create movement and interaction buttons
+	// Create movement buttons in grid layout
 	const touchControls = document.createElement('div');
 	touchControls.id = 'touch-controls';
 	Object.assign(touchControls.style, {
@@ -386,36 +392,43 @@ function addTouchControls() {
 		bottom: '20px',
 		left: '20px',
 		display: 'grid',
-		gridTemplateColumns: '50px 50px 50px',
-		gridTemplateRows: '50px 50px 50px',
+		gridTemplateColumns: '60px 60px 60px',
+		gridTemplateRows: '60px 60px 60px',
 		gap: '10px',
 		zIndex: '1000',
 		pointerEvents: 'none',
 	});
+
+	// Track active touches on buttons
+	const activeTouches = {};
 
 	const buttons = [
 		{
 			id: 'move-forward',
 			text: '↑',
 			action: () => (movement.forward = 1),
+			release: () => (movement.forward = 0),
 			style: { gridColumn: '2', gridRow: '1' },
 		},
 		{
 			id: 'move-left',
 			text: '←',
 			action: () => (movement.left = 1),
+			release: () => (movement.left = 0),
 			style: { gridColumn: '1', gridRow: '2' },
 		},
 		{
 			id: 'move-backward',
 			text: '↓',
 			action: () => (movement.backward = 1),
+			release: () => (movement.backward = 0),
 			style: { gridColumn: '2', gridRow: '3' },
 		},
 		{
 			id: 'move-right',
 			text: '→',
 			action: () => (movement.right = 1),
+			release: () => (movement.right = 0),
 			style: { gridColumn: '3', gridRow: '2' },
 		},
 	];
@@ -436,19 +449,76 @@ function addTouchControls() {
 			...btn.style,
 		});
 
+		// Use touchstart/touchend with identifiers to track multiple touches
 		button.addEventListener('touchstart', (e) => {
 			e.preventDefault();
 			e.stopPropagation();
+
+			// Store the touch identifier
+			for (let i = 0; i < e.changedTouches.length; i++) {
+				const touch = e.changedTouches[i];
+				activeTouches[touch.identifier] = {
+					button: btn,
+					element: button,
+				};
+			}
+
+			// Activate the button
 			btn.action();
+			button.style.backgroundColor = 'rgba(255,255,255,0.6)'; // Highlight active button
 		});
 
 		button.addEventListener('touchend', (e) => {
 			e.preventDefault();
 			e.stopPropagation();
-			movement.forward = 0;
-			movement.backward = 0;
-			movement.left = 0;
-			movement.right = 0;
+
+			// Remove the touch identifiers and deactivate if no touches remain
+			for (let i = 0; i < e.changedTouches.length; i++) {
+				const touch = e.changedTouches[i];
+				if (activeTouches[touch.identifier]) {
+					delete activeTouches[touch.identifier];
+				}
+			}
+
+			// Check if any remaining touches are on this button
+			let stillActive = false;
+			Object.values(activeTouches).forEach((touch) => {
+				if (touch.element === button) {
+					stillActive = true;
+				}
+			});
+
+			// Only deactivate if no touches remain on this button
+			if (!stillActive) {
+				btn.release();
+				button.style.backgroundColor = 'rgba(255,255,255,0.3)'; // Reset button color
+			}
+		});
+
+		// Handle touch cancel (e.g., system gestures)
+		button.addEventListener('touchcancel', (e) => {
+			e.preventDefault();
+
+			for (let i = 0; i < e.changedTouches.length; i++) {
+				const touch = e.changedTouches[i];
+				if (activeTouches[touch.identifier]) {
+					delete activeTouches[touch.identifier];
+				}
+			}
+
+			// Check if any remaining touches are on this button
+			let stillActive = false;
+			Object.values(activeTouches).forEach((touch) => {
+				if (touch.element === button) {
+					stillActive = true;
+				}
+			});
+
+			// Only deactivate if no touches remain on this button
+			if (!stillActive) {
+				btn.release();
+				button.style.backgroundColor = 'rgba(255,255,255,0.3)';
+			}
 		});
 
 		touchControls.appendChild(button);
@@ -456,7 +526,7 @@ function addTouchControls() {
 
 	document.body.appendChild(touchControls);
 
-	// Create interact button separately on the far right
+	// Create interact button separately on the right
 	const interactButton = document.createElement('button');
 	interactButton.id = 'interact';
 	interactButton.innerText = 'K';
@@ -464,32 +534,40 @@ function addTouchControls() {
 		position: 'fixed',
 		bottom: '20px',
 		right: '20px',
-		width: '60px',
-		height: '60px',
+		width: '80px',
+		height: '80px',
 		fontSize: '24px',
 		borderRadius: '50%',
-		backgroundColor: 'rgba(255,255,255,0.3)',
-		border: 'none',
+		backgroundColor: 'rgba(255, 165, 0, 0.7)',
+		border: '2px solid white',
 		color: 'white',
+		fontWeight: 'bold',
 		pointerEvents: 'auto',
+		zIndex: '1001',
 	});
 
 	interactButton.addEventListener('touchstart', (e) => {
 		e.preventDefault();
 		e.stopPropagation();
+		console.log('Interact button pressed');
 		movement.interact = true;
 		clicked = true;
+		interactButton.style.backgroundColor = 'rgba(255, 165, 0, 0.9)'; // Highlight active button
 	});
 
 	interactButton.addEventListener('touchend', (e) => {
 		e.preventDefault();
 		e.stopPropagation();
+		console.log('Interact button released');
 		movement.interact = false;
 		clicked = false;
+		interactButton.style.backgroundColor = 'rgba(255, 165, 0, 0.7)'; // Reset button color
 	});
 
 	document.body.appendChild(interactButton);
+	console.log('Touch controls added with multi-touch support');
 }
+
 document.addEventListener('mousedown', () => {
 	controls3.lock();
 });
@@ -862,25 +940,238 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 });
 
-// Improved HUD opening with smooth transitions
-function openHud(hudId) {
-	if (!hudId || hudId === 'na' || hudTransitionInProgress) return;
+// Add touch controls for mobile devices with simultaneous button presses and looking
+function addTouchControls() {
+	// Create touch look area (covers most of the screen except the bottom)
+	const touchLookArea = document.createElement('div');
+	touchLookArea.id = 'touch-look-area';
+	Object.assign(touchLookArea.style, {
+		position: 'fixed',
+		top: '0',
+		left: '0',
+		width: '100%',
+		height: '70%', // Leave bottom area for buttons
+		zIndex: '900',
+		pointerEvents: 'auto',
+	});
 
-	// Don't reopen the same HUD
-	if (activeHud === hudId) return;
+	// Touch events for looking around
+	touchLookArea.addEventListener('touchstart', (e) => {
+		e.preventDefault();
+		touchLookActive = true;
+		touchX = e.touches[0].clientX;
+		touchY = e.touches[0].clientY;
+	});
 
-	hudTransitionInProgress = true;
+	touchLookArea.addEventListener('touchmove', (e) => {
+		if (!touchLookActive) return;
+		e.preventDefault();
+		const deltaX = e.touches[0].clientX - touchX;
+		const deltaY = e.touches[0].clientY - touchY;
 
-	// Close any open HUD first
-	if (activeHud) {
-		closeHud(true).then(() => {
-			// After closing, open the new HUD
-			openHudElement(hudId);
+		controls3.getObject().rotation.y -=
+			deltaX * touchLookSensitivity * 0.05;
+		const verticalLook =
+			controls3.getObject().rotation.x -
+			deltaY * touchLookSensitivity * 0.01;
+		controls3.getObject().rotation.x = Math.max(
+			-Math.PI / 0.5,
+			Math.min(Math.PI / 0.5, verticalLook)
+		);
+
+		touchX = e.touches[0].clientX;
+		touchY = e.touches[0].clientY;
+	});
+
+	touchLookArea.addEventListener('touchend', (e) => {
+		e.preventDefault();
+		touchLookActive = false;
+	});
+
+	document.body.appendChild(touchLookArea);
+
+	// Create movement buttons in grid layout
+	const touchControls = document.createElement('div');
+	touchControls.id = 'touch-controls';
+	Object.assign(touchControls.style, {
+		position: 'fixed',
+		bottom: '20px',
+		left: '20px',
+		display: 'grid',
+		gridTemplateColumns: '60px 60px 60px',
+		gridTemplateRows: '60px 60px 60px',
+		gap: '10px',
+		zIndex: '1000',
+		pointerEvents: 'none',
+	});
+
+	// Track active touches on buttons
+	const activeTouches = {};
+
+	const buttons = [
+		{
+			id: 'move-forward',
+			text: '↑',
+			action: () => (movement.forward = 1),
+			release: () => (movement.forward = 0),
+			style: { gridColumn: '2', gridRow: '1' },
+		},
+		{
+			id: 'move-left',
+			text: '←',
+			action: () => (movement.left = 1),
+			release: () => (movement.left = 0),
+			style: { gridColumn: '1', gridRow: '2' },
+		},
+		{
+			id: 'move-backward',
+			text: '↓',
+			action: () => (movement.backward = 1),
+			release: () => (movement.backward = 0),
+			style: { gridColumn: '2', gridRow: '3' },
+		},
+		{
+			id: 'move-right',
+			text: '→',
+			action: () => (movement.right = 1),
+			release: () => (movement.right = 0),
+			style: { gridColumn: '3', gridRow: '2' },
+		},
+	];
+
+	buttons.forEach((btn) => {
+		const button = document.createElement('button');
+		button.id = btn.id;
+		button.innerText = btn.text;
+		Object.assign(button.style, {
+			width: '60px',
+			height: '60px',
+			fontSize: '24px',
+			borderRadius: '50%',
+			backgroundColor: 'rgba(255,255,255,0.3)',
+			border: 'none',
+			color: 'white',
+			pointerEvents: 'auto',
+			...btn.style,
 		});
-	} else {
-		// No active HUD, open directly
-		openHudElement(hudId);
-	}
+
+		// Use touchstart/touchend with identifiers to track multiple touches
+		button.addEventListener('touchstart', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+
+			// Store the touch identifier
+			for (let i = 0; i < e.changedTouches.length; i++) {
+				const touch = e.changedTouches[i];
+				activeTouches[touch.identifier] = {
+					button: btn,
+					element: button,
+				};
+			}
+
+			// Activate the button
+			btn.action();
+			button.style.backgroundColor = 'rgba(255,255,255,0.6)'; // Highlight active button
+		});
+
+		button.addEventListener('touchend', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+
+			// Remove the touch identifiers and deactivate if no touches remain
+			for (let i = 0; i < e.changedTouches.length; i++) {
+				const touch = e.changedTouches[i];
+				if (activeTouches[touch.identifier]) {
+					delete activeTouches[touch.identifier];
+				}
+			}
+
+			// Check if any remaining touches are on this button
+			let stillActive = false;
+			Object.values(activeTouches).forEach((touch) => {
+				if (touch.element === button) {
+					stillActive = true;
+				}
+			});
+
+			// Only deactivate if no touches remain on this button
+			if (!stillActive) {
+				btn.release();
+				button.style.backgroundColor = 'rgba(255,255,255,0.3)'; // Reset button color
+			}
+		});
+
+		// Handle touch cancel (e.g., system gestures)
+		button.addEventListener('touchcancel', (e) => {
+			e.preventDefault();
+
+			for (let i = 0; i < e.changedTouches.length; i++) {
+				const touch = e.changedTouches[i];
+				if (activeTouches[touch.identifier]) {
+					delete activeTouches[touch.identifier];
+				}
+			}
+
+			// Check if any remaining touches are on this button
+			let stillActive = false;
+			Object.values(activeTouches).forEach((touch) => {
+				if (touch.element === button) {
+					stillActive = true;
+				}
+			});
+
+			// Only deactivate if no touches remain on this button
+			if (!stillActive) {
+				btn.release();
+				button.style.backgroundColor = 'rgba(255,255,255,0.3)';
+			}
+		});
+
+		touchControls.appendChild(button);
+	});
+
+	document.body.appendChild(touchControls);
+
+	// Create interact button separately on the right
+	const interactButton = document.createElement('button');
+	interactButton.id = 'interact';
+	interactButton.innerText = 'K';
+	Object.assign(interactButton.style, {
+		position: 'fixed',
+		bottom: '20px',
+		right: '20px',
+		width: '80px',
+		height: '80px',
+		fontSize: '24px',
+		borderRadius: '50%',
+		backgroundColor: 'rgba(255, 165, 0, 0.7)',
+		border: '2px solid white',
+		color: 'white',
+		fontWeight: 'bold',
+		pointerEvents: 'auto',
+		zIndex: '1001',
+	});
+
+	interactButton.addEventListener('touchstart', (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		console.log('Interact button pressed');
+		movement.interact = true;
+		clicked = true;
+		interactButton.style.backgroundColor = 'rgba(255, 165, 0, 0.9)'; // Highlight active button
+	});
+
+	interactButton.addEventListener('touchend', (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		console.log('Interact button released');
+		movement.interact = false;
+		clicked = false;
+		interactButton.style.backgroundColor = 'rgba(255, 165, 0, 0.7)'; // Reset button color
+	});
+
+	document.body.appendChild(interactButton);
+	console.log('Touch controls added with multi-touch support');
 }
 
 // Helper function to open HUD element
@@ -1022,6 +1313,7 @@ function hideInteractionText() {
 }
 
 // Optimize the interaction handler for faster response
+// Optimize the interaction handler for faster response
 function createInteractionHandler(camera, movement, objects) {
 	let activeObject = null;
 	let isMovingToTarget = false;
@@ -1040,6 +1332,17 @@ function createInteractionHandler(camera, movement, objects) {
 	};
 
 	function update(currentTime, deltaTime) {
+		// Debug logging for interaction state
+		if (movement.interact !== lastInteractState) {
+			console.log('Interaction state changed:', movement.interact);
+			console.log(
+				'Detected object:',
+				interactionCache.lastDetectedObject
+					? interactionCache.lastDetectedObject.name
+					: 'none'
+			);
+		}
+
 		// Always check for interaction key state changes
 		if (movement.interact !== lastInteractState) {
 			lastInteractState = movement.interact;
@@ -1050,6 +1353,10 @@ function createInteractionHandler(camera, movement, objects) {
 				interactionCache.lastDetectedObject &&
 				!isMovingToTarget
 			) {
+				console.log(
+					'Starting movement to:',
+					interactionCache.lastDetectedObject.name
+				);
 				activeObject = interactionCache.lastDetectedObject;
 				isMovingToTarget = true;
 				moveProgress = 0;
@@ -1060,10 +1367,11 @@ function createInteractionHandler(camera, movement, objects) {
 			}
 		}
 
-		// Only check for new interactions periodically to save performance
-		// Only check for new interactions periodically to save performance
+		// Check for interactions more frequently on mobile
+		const checkInterval = isMobile ? 50 : interactionCheckInterval;
+
 		if (
-			currentTime - lastInteractionCheck < interactionCheckInterval &&
+			currentTime - lastInteractionCheck < checkInterval &&
 			!isMovingToTarget
 		) {
 			// Skip the position check but still process ongoing transitions
@@ -1071,18 +1379,16 @@ function createInteractionHandler(camera, movement, objects) {
 			lastInteractionCheck = currentTime;
 			const cameraPosition = camera.position;
 
-			// Skip detection if camera hasn't moved significantly and we're not in transition
+			// Always check on mobile or if we've moved significantly
 			if (
-				!isMovingToTarget &&
+				isMobile ||
+				!interactionCache.lastDetectedObject ||
 				interactionCache.lastPosition.distanceToSquared(
 					cameraPosition
-				) < 0.01 &&
-				interactionCache.lastDetectedObject &&
-				currentTime - interactionCache.lastCheckTime <
+				) >= 0.01 ||
+				currentTime - interactionCache.lastCheckTime >=
 					interactionCache.cacheTTL
 			) {
-				// Skip position check
-			} else {
 				// Update position cache
 				interactionCache.lastPosition.copy(cameraPosition);
 				interactionCache.lastCheckTime = currentTime;
@@ -1121,6 +1427,10 @@ function createInteractionHandler(camera, movement, objects) {
 
 				// Update UI only if the detected object has changed
 				if (detectedObject !== interactionCache.lastDetectedObject) {
+					console.log(
+						'Detected object changed:',
+						detectedObject ? detectedObject.name : 'none'
+					);
 					interactionCache.lastDetectedObject = detectedObject;
 
 					if (detectedObject) {
@@ -1174,6 +1484,7 @@ function createInteractionHandler(camera, movement, objects) {
 			// Check if transition is complete
 			if (moveProgress >= 1.0) {
 				isMovingToTarget = false;
+				console.log('Reached target, opening HUD:', activeObject.hud);
 
 				// Only trigger HUD opening when we've reached the target
 				if (activeObject.hud && activeObject.hud !== 'na') {
@@ -1261,15 +1572,20 @@ function animate3() {
 	const deltaTime = Math.min((currentTime - prevTime) / 1000, 0.1); // Cap delta time to prevent jumps
 	prevTime = currentTime;
 
+	// Update mobile controls if available
+	if (isMobile && window.updateMobileControls) {
+		window.updateMobileControls();
+	}
+
 	// Frame-rate independent move speed
 	const moveSpeed = baseMoveSpeed * deltaTime;
 
 	// Movement logic
 	direction.set(0, 0, 0);
-	if (movement.forward) direction.z = moveSpeed;
-	if (movement.backward) direction.z = -moveSpeed;
-	if (movement.left) direction.x = -moveSpeed;
-	if (movement.right) direction.x = moveSpeed;
+	if (movement.forward) direction.z = moveSpeed * movement.forward;
+	if (movement.backward) direction.z = -moveSpeed * movement.backward;
+	if (movement.left) direction.x = -moveSpeed * movement.left;
+	if (movement.right) direction.x = moveSpeed * movement.right;
 
 	// Check if player is moving and close HUD if open
 	if (
