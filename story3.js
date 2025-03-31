@@ -1,8 +1,8 @@
 const scene3 = new THREE.Scene();
-// const loaderElement = document.getElementById('loader');
-// const progressBar = document.getElementById('file');
-// const loaded = document.getElementById('loaded');
-// loaded.innerHTML = 'Loading: Initializing...';
+const loaderElement = document.getElementById('loader');
+const progressBar = document.getElementById('file');
+const loaded = document.getElementById('loaded');
+loaded.innerHTML = 'Loading: Initializing...';
 let loadedModelsCount = 0;
 const totalModels = 0;
 
@@ -648,7 +648,7 @@ document.addEventListener('keyup', (event) => {
 });
 
 // Enhanced model loading with better error handling and fallbacks
-const loader3 = new THREE.GLTFLoader();
+const loader3 = new THREE.GLTFLoader(loadingManager);
 let helmet3, blackhole;
 
 function loadModelWithLOD(path, callback, fallbackCallback) {
@@ -759,8 +759,8 @@ loadModelWithLOD(
 		helmetClone.position.x = helmet3.position.x + 0.4;
 		helmetClone.position.z = helmet3.position.z + 3.2;
 		scene3.add(helmetClone);
-	}
-	// Fallback function
+	},
+	
 );
 
 // Optimized text loading
