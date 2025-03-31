@@ -1,9 +1,8 @@
-// Scene setup
 const scene3 = new THREE.Scene();
-const loaderElement = document.getElementById('loader');
-const progressBar = document.getElementById('file');
-const loaded = document.getElementById('loaded');
-loaded.innerHTML = 'Loading: Initializing...';
+// const loaderElement = document.getElementById('loader');
+// const progressBar = document.getElementById('file');
+// const loaded = document.getElementById('loaded');
+// loaded.innerHTML = 'Loading: Initializing...';
 let loadedModelsCount = 0;
 const totalModels = 0;
 
@@ -34,6 +33,7 @@ const camera3 = new THREE.PerspectiveCamera(
 	500
 );
 camera3.position.set(-0.2, 0, 10);
+camera3.lookAt(1, 0, 9);
 
 // Renderer with standard settings
 const renderer3 = new THREE.WebGLRenderer({
@@ -126,7 +126,7 @@ let flickerTimer = null;
 function flickerLight() {
 	if (flickerTimer) return; // Prevent multiple concurrent flickers
 
-	const originalIntensity = 4;
+	const originalIntensity = 5;
 	const flickerDuration = 500;
 
 	// Use a less frequent interval for flickering
@@ -648,7 +648,7 @@ document.addEventListener('keyup', (event) => {
 });
 
 // Enhanced model loading with better error handling and fallbacks
-const loader3 = new THREE.GLTFLoader(loadingManager);
+const loader3 = new THREE.GLTFLoader();
 let helmet3, blackhole;
 
 function loadModelWithLOD(path, callback, fallbackCallback) {
@@ -759,8 +759,8 @@ loadModelWithLOD(
 		helmetClone.position.x = helmet3.position.x + 0.4;
 		helmetClone.position.z = helmet3.position.z + 3.2;
 		scene3.add(helmetClone);
-	},
-	createCorridorFallback // Fallback function
+	}
+	// Fallback function
 );
 
 // Optimized text loading
