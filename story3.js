@@ -12,7 +12,7 @@ const isMobile =
 		navigator.userAgent
 	);
 const isLowEndDevice =
-	navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2; // Only consider very low-end
+	navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4; // Only consider very low-end
 
 // Movement variables
 const movement = {
@@ -38,7 +38,7 @@ camera3.lookAt(1, 0, 9);
 // Renderer with standard settings
 const renderer3 = new THREE.WebGLRenderer({
 	antialias: !isLowEndDevice,
-	precision: isLowEndDevice ? 'mediump' : 'highp',
+	precision: isLowEndDevice ? 'highp' : 'highp',
 	powerPreference: 'default',
 });
 
@@ -181,159 +181,6 @@ let touchX = 0;
 let touchY = 0;
 let touchLookSensitivity = 0.1;
 
-// Add touch controls for mobile devices with look functionality
-// function addTouchControls() {
-// 	// Create touch look area (full screen)
-// 	const touchLookArea = document.createElement('div');
-// 	touchLookArea.id = 'touch-look-area';
-// 	Object.assign(touchLookArea.style, {
-// 		position: 'fixed',
-// 		top: '0',
-// 		left: '0',
-// 		width: '100%',
-// 		height: '100%',
-// 		zIndex: '900', // Below the control buttons
-// 		pointerEvents: 'auto',
-// 	});
-
-// 	// Touch events for looking around
-// 	touchLookArea.addEventListener('touchstart', (e) => {
-// 		e.preventDefault();
-// 		touchLookActive = true;
-// 		touchX = e.touches[0].clientX;
-// 		touchY = e.touches[0].clientY;
-// 	});
-
-// 	touchLookArea.addEventListener('touchmove', (e) => {
-// 		if (!touchLookActive) return;
-// 		e.preventDefault();
-
-// 		const deltaX = e.touches[0].clientX - touchX;
-// 		const deltaY = e.touches[0].clientY - touchY;
-
-// 		// Update camera rotation based on touch movement
-// 		controls3.getObject().rotation.y -=
-// 			deltaX * touchLookSensitivity * 0.01;
-
-// 		// Optional: vertical look (limited to prevent flipping)
-// 		const verticalLook =
-// 			controls3.getObject().rotation.x -
-// 			deltaY * touchLookSensitivity * 0.01;
-// 		controls3.getObject().rotation.x = Math.max(
-// 			-Math.PI / 2,
-// 			Math.min(Math.PI / 2, verticalLook)
-// 		);
-
-// 		// Update touch position
-// 		touchX = e.touches[0].clientX;
-// 		touchY = e.touches[0].clientY;
-// 	});
-
-// 	touchLookArea.addEventListener('touchend', (e) => {
-// 		e.preventDefault();
-// 		touchLookActive = false;
-// 	});
-
-// 	document.body.appendChild(touchLookArea);
-
-// 	// Create movement and interaction buttons
-// 	const touchControls = document.createElement('div');
-// 	touchControls.id = 'touch-controls';
-// 	Object.assign(touchControls.style, {
-// 		position: 'fixed',
-// 		bottom: '20px',
-// 		left: '0',
-// 		width: '100%',
-// 		display: 'flex',
-// 		justifyContent: 'center',
-// 		zIndex: '1000',
-// 		pointerEvents: 'none', // Container shouldn't block clicks
-// 	});
-
-// 	// Create control buttons
-// 	const buttons = [
-// 		{
-// 			id: 'move-forward',
-// 			text: '↑',
-// 			action: () => {
-// 				movement.forward = 1;
-// 			},
-// 		},
-// 		{
-// 			id: 'move-left',
-// 			text: '←',
-// 			action: () => {
-// 				movement.left = 1;
-// 			},
-// 		},
-// 		{
-// 			id: 'move-backward',
-// 			text: '↓',
-// 			action: () => {
-// 				movement.backward = 1;
-// 			},
-// 		},
-// 		{
-// 			id: 'move-right',
-// 			text: '→',
-// 			action: () => {
-// 				movement.right = 1;
-// 			},
-// 		},
-// 		{
-// 			id: 'interact',
-// 			text: 'K',
-// 			action: () => {
-// 				movement.interact = true;
-// 				clicked = true;
-// 			},
-// 		},
-// 	];
-
-// 	buttons.forEach((btn) => {
-// 		const button = document.createElement('button');
-// 		button.id = btn.id;
-// 		button.innerText = btn.text;
-// 		Object.assign(button.style, {
-// 			width: '60px',
-// 			height: '60px',
-// 			margin: '0 10px',
-// 			fontSize: '24px',
-// 			borderRadius: '50%',
-// 			backgroundColor: 'rgba(255,255,255,0.3)',
-// 			border: 'none',
-// 			color: 'white',
-// 			pointerEvents: 'auto', // Make button clickable
-// 		});
-
-// 		// Touch events for buttons
-// 		button.addEventListener('touchstart', (e) => {
-// 			e.preventDefault();
-// 			e.stopPropagation(); // Prevent the look control from activating
-// 			btn.action();
-// 		});
-
-// 		button.addEventListener('touchend', (e) => {
-// 			e.preventDefault();
-// 			e.stopPropagation(); // Prevent the look control from activating
-// 			if (btn.id === 'interact') {
-// 				movement.interact = false;
-// 				clicked = false;
-// 			} else {
-// 				// Reset movement
-// 				movement.forward = 0;
-// 				movement.backward = 0;
-// 				movement.left = 0;
-// 				movement.right = 0;
-// 			}
-// 		});
-
-// 		touchControls.appendChild(button);
-// 	});
-
-// 	document.body.appendChild(touchControls);
-// }
-// Add touch controls for mobile devices with look functionality
 // Add touch controls for mobile devices with simultaneous button presses and looking
 function addTouchControls() {
 	// Create touch look area (covers most of the screen except the bottom)
@@ -359,27 +206,39 @@ function addTouchControls() {
 
 	touchLookArea.addEventListener('touchmove', (e) => {
 		if (!touchLookActive) return;
+
+		let touch = null;
+		for (let i = 0; i < e.touches.length; i++) {
+			if (e.touches[i].target.id === 'touch-look-area') {
+				touch = e.touches[i]; // Prioritize the look area
+				break;
+			}
+		}
+
+		if (!touch) return; // Ignore if no touch is found for looking
+
 		e.preventDefault();
-		const deltaX = e.touches[0].clientX - touchX;
-		const deltaY = e.touches[0].clientY - touchY;
+		const deltaX = touch.clientX - touchX;
+		const deltaY = touch.clientY - touchY;
 
 		controls3.getObject().rotation.y -=
-			deltaX * touchLookSensitivity * 0.05;
+			deltaX * touchLookSensitivity * 0.01;
 		const verticalLook =
 			controls3.getObject().rotation.x -
 			deltaY * touchLookSensitivity * 0.01;
 		controls3.getObject().rotation.x = Math.max(
-			-Math.PI / 0.5,
-			Math.min(Math.PI / 0.5, verticalLook)
+			-Math.PI / 2,
+			Math.min(Math.PI / 2, verticalLook)
 		);
 
-		touchX = e.touches[0].clientX;
-		touchY = e.touches[0].clientY;
+		touchX = touch.clientX;
+		touchY = touch.clientY;
 	});
 
 	touchLookArea.addEventListener('touchend', (e) => {
-		e.preventDefault();
 		touchLookActive = false;
+
+		e.preventDefault();
 	});
 
 	document.body.appendChild(touchLookArea);
@@ -547,7 +406,7 @@ function addTouchControls() {
 	});
 
 	interactButton.addEventListener('touchstart', (e) => {
-		e.preventDefault();
+		// e.preventDefault();
 		e.stopPropagation();
 		console.log('Interact button pressed');
 		movement.interact = true;
@@ -556,7 +415,7 @@ function addTouchControls() {
 	});
 
 	interactButton.addEventListener('touchend', (e) => {
-		e.preventDefault();
+		// e.preventDefault();
 		e.stopPropagation();
 		console.log('Interact button released');
 		movement.interact = false;
@@ -745,23 +604,19 @@ function createBlackholeFallback() {
 }
 
 // Load corridor model with fallback
-loadModelWithLOD(
-	'./assets/spaceship_corridor/scene.gltf',
-	function (gltf) {
-		helmet3 = gltf.scene;
-		scene3.add(helmet3);
-		helmet3.position.set(-0.2, -1.5, -2.5);
-		helmet3.rotation.y = THREE.MathUtils.degToRad(90);
+loadModelWithLOD('./assets/spaceship_corridor/scene.gltf', function (gltf) {
+	helmet3 = gltf.scene;
+	scene3.add(helmet3);
+	helmet3.position.set(-0.2, -1.5, -2.5);
+	helmet3.rotation.y = THREE.MathUtils.degToRad(90);
 
-		// Create clone regardless of device
-		const helmetClone = helmet3.clone();
-		helmetClone.rotation.y = -helmet3.rotation.y;
-		helmetClone.position.x = helmet3.position.x + 0.4;
-		helmetClone.position.z = helmet3.position.z + 3.2;
-		scene3.add(helmetClone);
-	},
-	
-);
+	// Create clone regardless of device
+	const helmetClone = helmet3.clone();
+	helmetClone.rotation.y = -helmet3.rotation.y;
+	helmetClone.position.x = helmet3.position.x + 0.4;
+	helmetClone.position.z = helmet3.position.z + 3.2;
+	scene3.add(helmetClone);
+});
 
 // Optimized text loading
 const fontLoader = new THREE.FontLoader();
@@ -909,6 +764,56 @@ if (!isLowEndDevice) {
 	const bloomPass = new THREE.UnrealBloomPass(
 		new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2),
 		0.5,
+		0.4,
+		0.1
+	);
+	composer.addPass(bloomPass);
+
+	// Add FXAA
+	const fxaaPass = new THREE.ShaderPass(THREE.FXAAShader);
+	fxaaPass.uniforms['resolution'].value.set(
+		1 / (window.innerWidth * 0.75),
+		1 / (window.innerHeight * 0.75)
+	);
+	composer.addPass(fxaaPass);
+} else {
+	const grainShader = {
+		uniforms: {
+			tDiffuse: { value: null },
+			time: { value: 0.0 },
+			amount: { value: 0.156 },
+		},
+		vertexShader: `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+		fragmentShader: `
+            uniform sampler2D tDiffuse;
+            uniform float time;
+            uniform float amount;
+            varying vec2 vUv;
+            float random(vec2 co) {
+                return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+            }
+            void main() {
+                vec4 color = texture2D(tDiffuse, vUv);
+                float grain = random(vUv + time) * amount;
+                color.rgb += vec3(grain);
+                gl_FragColor = color;
+            }
+        `,
+	};
+
+	grainPass = new THREE.ShaderPass(grainShader);
+	composer.addPass(grainPass);
+
+	// Add Bloom Effect
+	const bloomPass = new THREE.UnrealBloomPass(
+		new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2),
+		0.1,
 		0.4,
 		0.1
 	);
@@ -1675,7 +1580,8 @@ function animate3() {
 		grainPass.uniforms.time.value += 0.01;
 		composer.render();
 	} else {
-		renderer3.render(scene3, camera3);
+		grainPass.uniforms.time.value += 0.0002;
+		composer.render();
 	}
 }
 
