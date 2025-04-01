@@ -509,6 +509,20 @@ document.addEventListener('keyup', (event) => {
 // Enhanced model loading with better error handling and fallbacks
 const loader3 = new THREE.GLTFLoader(loadingManager);
 let helmet3, blackhole;
+// Load corridor model with fallback
+loadModelWithLOD('./assets/spaceship_corridor/scene.gltf', function (gltf) {
+	helmet3 = gltf.scene;
+	scene3.add(helmet3);
+	helmet3.position.set(-0.2, -1.5, -2.5);
+	helmet3.rotation.y = THREE.MathUtils.degToRad(90);
+
+	// Create clone regardless of device
+	const helmetClone = helmet3.clone();
+	helmetClone.rotation.y = -helmet3.rotation.y;
+	helmetClone.position.x = helmet3.position.x + 0.4;
+	helmetClone.position.z = helmet3.position.z + 3.2;
+	scene3.add(helmetClone);
+});
 
 function loadModelWithLOD(path, callback, fallbackCallback) {
 	// Track loading attempt
@@ -602,21 +616,6 @@ function createBlackholeFallback() {
 
 	console.log('Using blackhole fallback geometry');
 }
-
-// Load corridor model with fallback
-loadModelWithLOD('./assets/spaceship_corridor/scene.gltf', function (gltf) {
-	helmet3 = gltf.scene;
-	scene3.add(helmet3);
-	helmet3.position.set(-0.2, -1.5, -2.5);
-	helmet3.rotation.y = THREE.MathUtils.degToRad(90);
-
-	// Create clone regardless of device
-	const helmetClone = helmet3.clone();
-	helmetClone.rotation.y = -helmet3.rotation.y;
-	helmetClone.position.x = helmet3.position.x + 0.4;
-	helmetClone.position.z = helmet3.position.z + 3.2;
-	scene3.add(helmetClone);
-});
 
 // Optimized text loading
 const fontLoader = new THREE.FontLoader();
