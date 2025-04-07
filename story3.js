@@ -5,7 +5,6 @@ const loaded = document.getElementById('loaded');
 loaded.innerHTML = 'Loading: Initializing...';
 let loadedModelsCount = 0;
 const totalModels = 0;
-
 // Device capability detection - only detect truly low-end devices
 const isMobile =
 	/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
@@ -13,7 +12,6 @@ const isMobile =
 	);
 const isLowEndDevice =
 	navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4; // Only consider very low-end
-
 // Movement variables
 const movement = {
 	forward: 0,
@@ -24,7 +22,6 @@ const movement = {
 };
 const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
-
 // Camera setup with standard far plane
 const camera3 = new THREE.PerspectiveCamera(
 	75,
@@ -33,20 +30,17 @@ const camera3 = new THREE.PerspectiveCamera(
 	500
 );
 camera3.position.set(-0.2, 0, 10);
-camera3.lookAt(1, 0, 9);
-
+// camera3.lookAt(1, 0, 9);
 // Renderer with standard settings
 const renderer3 = new THREE.WebGLRenderer({
 	antialias: !isLowEndDevice,
 	precision: isLowEndDevice ? 'highp' : 'highp',
 	powerPreference: 'high-performance',
 });
-
 // Use device's native pixel ratio
 const pixelRatio = Math.min(window.devicePixelRatio, 2);
 renderer3.setSize(window.innerWidth, window.innerHeight);
 renderer3.setPixelRatio(pixelRatio);
-
 // Append renderer
 const container3 = document.getElementById('story3');
 const bod = document.getElementById('bod');
@@ -55,19 +49,29 @@ if (container3) {
 } else {
 	console.error('Element with id="story3" not found.');
 }
-
 // Loading manager with improved progress tracking
+
+if (isMobile == true) {
+	document.getElementById('text').innerText =
+		'Long press to move.\n\n Move your finger to look around.';
+}
 const loadingManager = new THREE.LoadingManager(
 	() => {
 		console.log('All assets loaded');
-
 		setTimeout(() => {
 			loaderElement.style.animation = 'fadeOut 0.5s ease-in-out forwards';
 			setTimeout(() => {
+				setTimeout(() => {
+					directions.style.animation =
+						'fadeOut 0.5s ease-in-out forwards';
+					setTimeout(() => {
+						directions.style.display = 'none';
+					}, 500);
+				}, 5000);
+
 				loaderElement.style.display = 'none';
 			}, 500);
 		}, 100);
-
 		// Add touch controls for mobile after loading completes
 		if (isMobile) {
 			addTouchControls();
@@ -85,74 +89,26 @@ const loadingManager = new THREE.LoadingManager(
 		console.error(`Error loading: ${url}`);
 	}
 );
-
 // Standard lighting setup with all original lights
-// const lg1 = new THREE.PointLight(0xffffff, 5, 6); //last light
-// lg1.position.set(0, -2, -11);
-// scene3.add(lg1);
-
-// const lg2 = new THREE.PointLight(0xffffff, 5, 5); //second last light
-// lg2.position.set(0, -2, -9);
-// scene3.add(lg2);
-
-// const lg3 = new THREE.PointLight(0xffffff, 5, 7);
-// lg3.position.set(0, -1.7, -6);
-// scene3.add(lg3);
-
-// const lg4 = new THREE.PointLight(0xffffff, 5, 6);
-// lg4.position.set(0, -2, 0);
-// scene3.add(lg4);
-
-// const lg5 = new THREE.PointLight(0xffffff, 5, 6);
-// lg5.position.set(0, -2, 10);
-// scene3.add(lg5);
-
-// const lg6 = new THREE.PointLight(0xffffff, 5, 5);
-// lg6.position.set(0, -2, 7);
-// scene3.add(lg6);
-
-// const blueLightRight3 = new THREE.PointLight(0x0000ff, 7, 5);
-// blueLightRight3.position.set(0, -3, -9);
-// scene3.add(blueLightRight3);
-
-// const blueLightRight4 = new THREE.PointLight(0x0000ff, 6, 1);
-// blueLightRight4.position.set(0, -3, -2.5);
-// scene3.add(blueLightRight4);
-
-// const outsideLight = new THREE.PointLight(0xff0000, 7, 20);
-// outsideLight.position.set(-4, 1, -10);
-// scene3.add(outsideLight);
-
-// const outsideLight3 = new THREE.PointLight(0xff0000, 7, 20);
-// outsideLight3.position.set(-4, 0.1, -4);
-// scene3.add(outsideLight3);
-
 const isMobileBrightnessBoost = isMobile ? 8 : 0; // Brightness boost for mobile
-
 const lg1 = new THREE.PointLight(0xffffff, 5 + isMobileBrightnessBoost, 6); //last light
 lg1.position.set(0, -2, -11);
 scene3.add(lg1);
-
 const lg2 = new THREE.PointLight(0xffffff, 5 + isMobileBrightnessBoost, 5); //second last light
 lg2.position.set(0, -2, -9);
 scene3.add(lg2);
-
 const lg3 = new THREE.PointLight(0xffffff, 5 + isMobileBrightnessBoost, 7);
 lg3.position.set(0, -1.7, -6);
 scene3.add(lg3);
-
 const lg4 = new THREE.PointLight(0xffffff, 5 + isMobileBrightnessBoost, 6);
 lg4.position.set(0, -2, 0);
 scene3.add(lg4);
-
 const lg5 = new THREE.PointLight(0xffffff, 5 + isMobileBrightnessBoost, 6);
 lg5.position.set(0, -2, 10);
 scene3.add(lg5);
-
 const lg6 = new THREE.PointLight(0xffffff, 5, 5);
 lg6.position.set(0, -2, 7);
 scene3.add(lg6);
-
 const blueLightRight3 = new THREE.PointLight(
 	0x0000ff,
 	7 + isMobileBrightnessBoost,
@@ -160,7 +116,6 @@ const blueLightRight3 = new THREE.PointLight(
 );
 blueLightRight3.position.set(0, -3, -9);
 scene3.add(blueLightRight3);
-
 const blueLightRight4 = new THREE.PointLight(
 	0x0000ff,
 	6 + isMobileBrightnessBoost,
@@ -168,7 +123,6 @@ const blueLightRight4 = new THREE.PointLight(
 );
 blueLightRight4.position.set(0, -3, -2.5);
 scene3.add(blueLightRight4);
-
 const outsideLight = new THREE.PointLight(
 	0xff0000,
 	7 + isMobileBrightnessBoost,
@@ -176,7 +130,6 @@ const outsideLight = new THREE.PointLight(
 );
 outsideLight.position.set(-4, 1, -10);
 scene3.add(outsideLight);
-
 const outsideLight3 = new THREE.PointLight(
 	0xff0000,
 	7 + isMobileBrightnessBoost,
@@ -184,15 +137,12 @@ const outsideLight3 = new THREE.PointLight(
 );
 outsideLight3.position.set(-4, 0.1, -4);
 scene3.add(outsideLight3);
-
 // Optimized light flickering
 let flickerTimer = null;
 function flickerLight() {
 	if (flickerTimer) return; // Prevent multiple concurrent flickers
-
 	const originalIntensity = 5;
 	const flickerDuration = 500;
-
 	// Use a less frequent interval for flickering
 	flickerTimer = setInterval(() => {
 		const randomIntensity = 0.5 + Math.random() * 0.7;
@@ -200,7 +150,6 @@ function flickerLight() {
 		lg1.intensity = randomIntensity;
 		lg5.intensity = randomIntensity;
 	}, 100);
-
 	setTimeout(() => {
 		clearInterval(flickerTimer);
 		flickerTimer = null;
@@ -209,27 +158,15 @@ function flickerLight() {
 		lg5.intensity = originalIntensity;
 	}, flickerDuration);
 }
-
 // Standard flickering interval
 setInterval(flickerLight, 5000);
-
 // Controls setup
 const controls3 = new THREE.PointerLockControls(camera3, document.body);
 scene3.add(controls3.getObject());
-
 // Simplified UI handling
-const directions = document.getElementById('directions');
-if (directions) {
-	directions.style.display = 'none';
-	setTimeout(() => {
-		directions.style.animation = 'fadeOut 0.5s ease-in-out forwards';
-	}, 5000);
-}
-
 // Event listeners with throttling for better performance
 let keyEventThrottleTimer = null;
 const keyEventThrottleDelay = 10;
-
 // Initialize variables needed by interaction system
 let hud = 'na';
 let clicked = false;
@@ -238,12 +175,25 @@ let interactionTextElement = null;
 let lastInteractionCheck = 0;
 let hudTransitionInProgress = false;
 const interactionCheckInterval = 100;
-
 // Touch look controls variables
 let touchLookActive = false;
 let touchX = 0;
 let touchY = 0;
 let touchLookSensitivity = 0.07;
+
+// FIX: Add a flag to track input processing state
+let isProcessingInput = false;
+// FIX: Add a debounce timer for interaction events
+let interactionDebounceTimer = null;
+const interactionDebounceDelay = 300; // ms
+
+// FIX: Add key state tracking to prevent stuck movement
+const keyStates = {
+	KeyW: false,
+	KeyS: false,
+	KeyA: false,
+	KeyD: false,
+};
 
 function addTouchControls() {
 	// Create touch look/move area (covers most of the screen)
@@ -254,89 +204,77 @@ function addTouchControls() {
 		top: '0',
 		left: '0',
 		width: '100%',
-		height: '80%', // Leave bottom area for K button
+		height: '80%',
 		zIndex: '900',
 		pointerEvents: 'auto',
 	});
 
 	// Touch state variables
 	let touchActive = false;
-	let touchStartTime = 0;
 	let touchStartX = 0;
 	let touchStartY = 0;
-	let touchX = 0;
-	let touchY = 0;
+	let lastTouchX = 0;
+	let lastTouchY = 0;
 	let lastTapTime = 0;
 	let isMovingForward = false;
 	let isMovingBackward = false;
-	let longPressTimer = null;
-	let doubleTapDetected = false;
-	const longPressThreshold = 700; // ms
-	const doubleTapThreshold = 100; // ms
-	const touchLookSensitivity = 0.1;
+	const doubleTapThreshold = 100;
+	const touchLookSensitivity = 0.01; // Adjusted sensitivity
 
-	// Touch events for looking and moving
 	touchArea.addEventListener('touchstart', (e) => {
 		e.preventDefault();
+		if (isProcessingInput) return;
+
 		touchActive = true;
-		touchStartTime = performance.now();
 		touchStartX = e.touches[0].clientX;
 		touchStartY = e.touches[0].clientY;
-		touchX = touchStartX;
-		touchY = touchStartY;
+		lastTouchX = touchStartX;
+		lastTouchY = touchStartY;
 
-		// Check for double tap
+		// Double tap detection
 		const now = performance.now();
 		if (now - lastTapTime < doubleTapThreshold) {
-			doubleTapDetected = true;
-			console.log('Double tap detected');
+			isMovingBackward = true;
+			movement.backward = 1;
+		} else {
+			isMovingForward = true;
+			movement.forward = 1;
 		}
 		lastTapTime = now;
-
-		// Set a timer for long press
-		clearTimeout(longPressTimer);
-		longPressTimer = setTimeout(() => {
-			// Activate movement based on double tap status
-			if (doubleTapDetected) {
-				console.log('Long press with double tap - moving backward');
-				isMovingBackward = true;
-				movement.backward = 1;
-			} else {
-				console.log('Long press - moving forward');
-				isMovingForward = true;
-				movement.forward = 1;
-			}
-		}, longPressThreshold);
 	});
 
 	touchArea.addEventListener('touchmove', (e) => {
 		if (!touchActive) return;
 		e.preventDefault();
 
-		// Handle looking around
-		const deltaX = e.touches[0].clientX - touchX;
-		const deltaY = e.touches[0].clientY - touchY;
+		const touch = e.touches[0];
+		const deltaX = touch.clientX - lastTouchX;
+		const deltaY = touch.clientY - lastTouchY;
 
-		controls3.getObject().rotation.y -=
-			deltaX * touchLookSensitivity * 0.05;
-		const verticalLook =
-			controls3.getObject().rotation.x -
-			deltaY * touchLookSensitivity * 0.05;
-		controls3.getObject().rotation.x = Math.max(
-			-Math.PI / 1,
-			Math.min(Math.PI / 1, verticalLook)
-		);
+		// Update camera rotation
+		const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+		euler.setFromQuaternion(camera3.quaternion);
 
-		touchX = e.touches[0].clientX;
-		touchY = e.touches[0].clientY;
+		// Horizontal rotation (around Y axis)
+		euler.y -= deltaX * touchLookSensitivity;
+
+		// Vertical rotation (around X axis)
+		euler.x -= deltaY * touchLookSensitivity;
+
+		// Clamp vertical rotation to prevent over-rotation
+		euler.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, euler.x));
+
+		// Apply the rotation
+		camera3.quaternion.setFromEuler(euler);
+
+		// Update last touch position
+		lastTouchX = touch.clientX;
+		lastTouchY = touch.clientY;
 	});
 
 	touchArea.addEventListener('touchend', (e) => {
 		e.preventDefault();
 		touchActive = false;
-
-		// Clear the long press timer
-		clearTimeout(longPressTimer);
 
 		// Stop movement
 		if (isMovingForward) {
@@ -347,11 +285,6 @@ function addTouchControls() {
 			isMovingBackward = false;
 			movement.backward = 0;
 		}
-
-		// Reset double tap after a short delay
-		setTimeout(() => {
-			doubleTapDetected = false;
-		}, doubleTapThreshold);
 	});
 
 	document.body.appendChild(touchArea);
@@ -376,12 +309,23 @@ function addTouchControls() {
 		zIndex: '1001',
 	});
 
+	// FIX: Add debounce to interact button to prevent multiple rapid activations
 	interactButton.addEventListener('touchstart', (e) => {
 		e.stopPropagation();
+
+		// FIX: Prevent multiple rapid interactions
+		if (isProcessingInput || interactionDebounceTimer) return;
+
 		console.log('Interact button pressed');
+		isProcessingInput = true;
 		movement.interact = true;
 		clicked = true;
 		interactButton.style.backgroundColor = 'rgba(255, 165, 0, 0.9)';
+
+		// FIX: Set a debounce timer to prevent rapid repeated interactions
+		interactionDebounceTimer = setTimeout(() => {
+			interactionDebounceTimer = null;
+		}, interactionDebounceDelay);
 	});
 
 	interactButton.addEventListener('touchend', (e) => {
@@ -390,10 +334,14 @@ function addTouchControls() {
 		movement.interact = false;
 		clicked = false;
 		interactButton.style.backgroundColor = 'rgba(255, 165, 0, 0.7)';
+
+		// FIX: Reset processing flag after a short delay to ensure UI has time to respond
+		setTimeout(() => {
+			isProcessingInput = false;
+		}, 100);
 	});
 
 	document.body.appendChild(interactButton);
-
 	// Add visual indicator for movement state
 	const moveIndicator = document.createElement('div');
 	moveIndicator.id = 'move-indicator';
@@ -411,7 +359,6 @@ function addTouchControls() {
 		zIndex: '1002',
 	});
 	document.body.appendChild(moveIndicator);
-
 	// Function to update the movement indicator
 	function updateMoveIndicator() {
 		if (isMovingForward) {
@@ -426,7 +373,6 @@ function addTouchControls() {
 		requestAnimationFrame(updateMoveIndicator);
 	}
 	updateMoveIndicator();
-
 	console.log('New touch controls added with long-press movement');
 }
 
@@ -434,80 +380,109 @@ document.addEventListener('mousedown', () => {
 	controls3.lock();
 });
 
-// Event listeners with immediate response for interaction key
+// FIX: Completely rewritten keyboard handling to prevent stuck movement
 document.addEventListener('keydown', (event) => {
 	if (event.code === 'Escape') {
 		controls3.unlock();
 		return;
 	}
 
-	// Handle K key immediately without throttling for better responsiveness
+	// Handle K key for interaction
 	if (event.code === 'KeyK') {
+		if (isProcessingInput || interactionDebounceTimer) return;
+
+		isProcessingInput = true;
 		movement.interact = true;
 		clicked = true;
-		return; // Skip throttling for K key
+
+		// Set debounce timer
+		interactionDebounceTimer = setTimeout(() => {
+			interactionDebounceTimer = null;
+		}, interactionDebounceDelay);
+
+		return;
 	}
 
-	// Throttle other keys for performance
-	if (keyEventThrottleTimer === null) {
-		keyEventThrottleTimer = setTimeout(() => {
-			keyEventThrottleTimer = null;
+	// Track key state
+	if (event.code in keyStates) {
+		keyStates[event.code] = true;
 
-			// Close HUD when movement keys are pressed
-			if (
-				['KeyW', 'KeyS', 'KeyA', 'KeyD'].includes(event.code) &&
-				activeHud
-			) {
-				closeHud();
-			}
+		// Update movement based on current key states
+		updateMovementFromKeyStates();
 
-			switch (event.code) {
-				case 'KeyW':
-					movement.forward = 1;
-					break;
-				case 'KeyS':
-					movement.backward = 1;
-					break;
-				case 'KeyA':
-					movement.left = 1;
-					break;
-				case 'KeyD':
-					movement.right = 1;
-					break;
-			}
-		}, keyEventThrottleDelay);
+		// Close HUD when movement keys are pressed
+		if (activeHud && !hudTransitionInProgress) {
+			closeHud();
+		}
 	}
 });
 
 document.addEventListener('keyup', (event) => {
-	// Handle K key immediately without throttling
+	// Handle K key immediately
 	if (event.code === 'KeyK') {
 		movement.interact = false;
 		clicked = false;
-		return; // Skip throttling for K key
+
+		// Reset processing flag after a short delay
+		setTimeout(() => {
+			isProcessingInput = false;
+		}, 100);
+
+		return;
 	}
 
-	if (keyEventThrottleTimer === null) {
-		keyEventThrottleTimer = setTimeout(() => {
-			keyEventThrottleTimer = null;
+	// Update key state
+	if (event.code in keyStates) {
+		keyStates[event.code] = false;
 
-			switch (event.code) {
-				case 'KeyW':
-					movement.forward = 0;
-					break;
-				case 'KeyS':
-					movement.backward = 0;
-					break;
-				case 'KeyA':
-					movement.left = 0;
-					break;
-				case 'KeyD':
-					movement.right = 0;
-					break;
-			}
-		}, keyEventThrottleDelay);
+		// Update movement based on current key states
+		updateMovementFromKeyStates();
 	}
 });
+
+// FIX: New function to update movement based on key states
+function updateMovementFromKeyStates() {
+	// Set movement values based on current key states
+	movement.forward = keyStates.KeyW ? 1 : 0;
+	movement.backward = keyStates.KeyS ? 1 : 0;
+	movement.left = keyStates.KeyA ? 1 : 0;
+	movement.right = keyStates.KeyD ? 1 : 0;
+
+	// If opposing keys are pressed, cancel out the movement
+	if (movement.forward && movement.backward) {
+		movement.forward = 0;
+		movement.backward = 0;
+	}
+
+	if (movement.left && movement.right) {
+		movement.left = 0;
+		movement.right = 0;
+	}
+}
+
+// FIX: Function to reset all movement when focus is lost
+function resetAllMovement() {
+	// Reset all key states
+	for (let key in keyStates) {
+		keyStates[key] = false;
+	}
+
+	// Reset all movement values
+	movement.forward = 0;
+	movement.backward = 0;
+	movement.left = 0;
+	movement.right = 0;
+
+	// Reset interaction state
+	movement.interact = false;
+	clicked = false;
+	isProcessingInput = false;
+
+	if (interactionDebounceTimer) {
+		clearTimeout(interactionDebounceTimer);
+		interactionDebounceTimer = null;
+	}
+}
 
 // Enhanced model loading with better error handling and fallbacks
 const loader3 = new THREE.GLTFLoader(loadingManager);
@@ -518,7 +493,6 @@ loadModelWithLOD('./assets/spaceship_corridor/scene.gltf', function (gltf) {
 	scene3.add(helmet3);
 	helmet3.position.set(-0.2, -1.5, -2.5);
 	helmet3.rotation.y = THREE.MathUtils.degToRad(90);
-
 	// Create clone regardless of device
 	const helmetClone = helmet3.clone();
 	helmetClone.rotation.y = -helmet3.rotation.y;
@@ -531,7 +505,6 @@ function loadModelWithLOD(path, callback, fallbackCallback) {
 	// Track loading attempt
 	let loadAttempted = false;
 	let loadTimeout;
-
 	// Set a timeout to detect loading failures
 	loadTimeout = setTimeout(() => {
 		if (!loadAttempted) {
@@ -539,13 +512,11 @@ function loadModelWithLOD(path, callback, fallbackCallback) {
 			if (fallbackCallback) fallbackCallback();
 		}
 	}, 15000); // 15 seconds timeout
-
 	loader3.load(
 		path,
 		function (gltf) {
 			loadAttempted = true;
 			clearTimeout(loadTimeout);
-
 			// Try-catch to handle any post-processing errors
 			try {
 				callback(gltf);
@@ -559,6 +530,9 @@ function loadModelWithLOD(path, callback, fallbackCallback) {
 			if (xhr.lengthComputable) {
 				const percentComplete = (xhr.loaded / xhr.total) * 100;
 				console.log(`${path} loading: ${Math.round(percentComplete)}%`);
+				// if (percentComplete < 100) {
+
+				// }
 			}
 		},
 		function (error) {
@@ -581,7 +555,6 @@ function createCorridorFallback() {
 	const corridor = new THREE.Mesh(corridorGeometry, corridorMaterial);
 	corridor.position.set(0, -1, 0);
 	scene3.add(corridor);
-
 	// Add floor
 	const floorGeometry = new THREE.PlaneGeometry(2, 30);
 	const floorMaterial = new THREE.MeshBasicMaterial({ color: 0x222233 });
@@ -589,7 +562,6 @@ function createCorridorFallback() {
 	floor.rotation.x = -Math.PI / 2;
 	floor.position.set(0, -2, 0);
 	scene3.add(floor);
-
 	console.log('Using corridor fallback geometry');
 }
 
@@ -604,7 +576,6 @@ function createBlackholeFallback() {
 	blackhole = new THREE.Mesh(blackholeGeometry, blackholeMaterial);
 	blackhole.position.set(-350, -1, -6);
 	scene3.add(blackhole);
-
 	// Add glow effect
 	const glowGeometry = new THREE.SphereGeometry(12, 16, 16);
 	const glowMaterial = new THREE.MeshBasicMaterial({
@@ -616,7 +587,6 @@ function createBlackholeFallback() {
 	const glow = new THREE.Mesh(glowGeometry, glowMaterial);
 	glow.position.copy(blackhole.position);
 	scene3.add(glow);
-
 	console.log('Using blackhole fallback geometry');
 }
 
@@ -638,13 +608,11 @@ fontLoader.load('assets/Hyper Scrypt Stencil_Regular.json', function (font) {
 			bevelSegments: 20,
 		}
 	);
-
 	const textMaterial = new THREE.MeshStandardMaterial({
 		color: 0xffffa500,
 		metalness: -4,
 		roughness: 0.2,
 	});
-
 	const floatingText = new THREE.Mesh(textGeometry, textMaterial);
 	floatingText.position.set(-1.2, -0.1, 6.9);
 	floatingText.rotation.y = 14.135;
@@ -659,16 +627,13 @@ loadModelWithLOD(
 		helmet3.position.set(-0.7, -1.5, 3);
 		helmet3.rotation.y = THREE.MathUtils.degToRad(90);
 		scene3.add(helmet3);
-
 		const geometry = new THREE.PlaneGeometry(0.5, 0.3);
 		const material = new THREE.MeshBasicMaterial({
 			color: 0xff00ffff,
 			side: THREE.DoubleSide,
 		});
-
 		const square = new THREE.Mesh(geometry, material);
 		square.position.set(-0.55, -0.4, 3);
-
 		const tilt = new THREE.Quaternion();
 		const rotate = new THREE.Quaternion();
 		tilt.setFromAxisAngle(
@@ -680,7 +645,6 @@ loadModelWithLOD(
 			THREE.MathUtils.degToRad(-90)
 		);
 		square.quaternion.multiplyQuaternions(rotate, tilt);
-
 		scene3.add(square);
 	}
 );
@@ -692,13 +656,11 @@ loadModelWithLOD('./assets/full_screen/scene.gltf', function (gltf) {
 	full_screen.rotation.y = THREE.MathUtils.degToRad(-90);
 	full_screen.scale.set(0.05, 0.05, 0.05);
 	scene3.add(full_screen);
-
 	const geometry = new THREE.PlaneGeometry(1.6, 1.1);
 	const material = new THREE.MeshBasicMaterial({
 		color: 0xff00ffff,
 		side: THREE.DoubleSide,
 	});
-
 	const square = new THREE.Mesh(geometry, material);
 	square.position.set(1.09, -0, -2.5);
 	square.rotation.y = THREE.MathUtils.degToRad(90);
@@ -724,7 +686,6 @@ loadModelWithLOD(
 const composer = new THREE.EffectComposer(renderer3);
 const renderPass = new THREE.RenderPass(scene3, camera3);
 composer.addPass(renderPass);
-
 // Add post-processing effects for all devices except very low-end ones
 let grainPass;
 if (!isLowEndDevice) {
@@ -758,10 +719,8 @@ if (!isLowEndDevice) {
             }
         `,
 	};
-
 	grainPass = new THREE.ShaderPass(grainShader);
 	composer.addPass(grainPass);
-
 	// Add Bloom Effect
 	const bloomPass = new THREE.UnrealBloomPass(
 		new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2),
@@ -770,7 +729,6 @@ if (!isLowEndDevice) {
 		0.1
 	);
 	composer.addPass(bloomPass);
-
 	// Add FXAA
 	const fxaaPass = new THREE.ShaderPass(THREE.FXAAShader);
 	fxaaPass.uniforms['resolution'].value.set(
@@ -808,10 +766,8 @@ if (!isLowEndDevice) {
             }
         `,
 	};
-
 	grainPass = new THREE.ShaderPass(grainShader);
 	composer.addPass(grainPass);
-
 	// Add Bloom Effect
 	const bloomPass = new THREE.UnrealBloomPass(
 		new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2),
@@ -820,7 +776,6 @@ if (!isLowEndDevice) {
 		0.1
 	);
 	composer.addPass(bloomPass);
-
 	// Add FXAA
 	const fxaaPass = new THREE.ShaderPass(THREE.FXAAShader);
 	fxaaPass.uniforms['resolution'].value.set(
@@ -836,7 +791,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	const hudElements = ['about_me', 'projects', 'about_this']
 		.map((id) => document.getElementById(id))
 		.filter((el) => el);
-
 	// Apply initial styles
 	hudElements.forEach((el) => {
 		if (el) {
@@ -847,29 +801,57 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 });
 
-// Change this function name from openHudElement to openHud
+// FIX: Improved HUD management with safeguards against multiple operations
 function openHud(hudId) {
+	// FIX: Prevent multiple HUD operations at once
+	if (hudTransitionInProgress) {
+		console.log('HUD transition already in progress, ignoring request');
+		return;
+	}
+
+	hudTransitionInProgress = true;
+	hideInteractionText();
+
 	const hudElement = document.getElementById(hudId);
 	if (!hudElement) {
 		hudTransitionInProgress = false;
 		return;
 	}
+
+	// Close any existing HUD first
+	if (activeHud) {
+		closeHud(true).then(() => {
+			// Now open the new HUD
+			performHudOpen(hudId, hudElement);
+		});
+	} else {
+		performHudOpen(hudId, hudElement);
+	}
+}
+
+// FIX: Separate function to perform the actual HUD opening
+function performHudOpen(hudId, hudElement) {
 	// Pause rendering during HUD transition to prevent stuttering
 	if (!isMobile) {
 		controls3.unlock();
 	}
+
 	// Prepare element for animation
 	hudElement.style.display = 'block';
 	hudElement.style.opacity = '0';
 	hudElement.style.transform = 'translateY(20px)';
+
 	// Force a reflow to ensure the transition works
 	void hudElement.offsetWidth;
+
 	// Add transition properties
 	hudElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+
 	// Use requestAnimationFrame for smoother transitions
 	requestAnimationFrame(() => {
 		hudElement.style.opacity = '1';
 		hudElement.style.transform = 'translateY(0)';
+
 		// Update active HUD and clear transition flag after animation completes
 		setTimeout(() => {
 			activeHud = hudId;
@@ -877,17 +859,31 @@ function openHud(hudId) {
 		}, 300);
 	});
 }
+
 // Improved HUD closing with promise for chaining
 function closeHud(isChained = false) {
 	return new Promise((resolve) => {
 		if (!activeHud || activeHud === 'na') {
+			hudTransitionInProgress = false;
 			resolve();
 			return;
 		}
 
+		// FIX: Prevent multiple close operations
+		if (hudTransitionInProgress && !isChained) {
+			console.log(
+				'HUD transition already in progress, ignoring close request'
+			);
+			resolve();
+			return;
+		}
+
+		hudTransitionInProgress = true;
+
 		const hudElement = document.getElementById(activeHud);
 		if (!hudElement) {
 			activeHud = null;
+			hudTransitionInProgress = false;
 			resolve();
 			return;
 		}
@@ -915,6 +911,7 @@ function closeHud(isChained = false) {
 				});
 			}
 
+			hudTransitionInProgress = false;
 			resolve(previousHud);
 		}, 300);
 	});
@@ -925,7 +922,6 @@ function showInteractionText(message, hudId) {
 	if (!interactionTextElement) {
 		interactionTextElement = document.createElement('div');
 		interactionTextElement.id = 'interaction-text';
-
 		// Use transform instead of position for better performance
 		Object.assign(interactionTextElement.style, {
 			position: 'absolute',
@@ -946,21 +942,16 @@ function showInteractionText(message, hudId) {
 			opacity: '0',
 			transition: 'opacity 0.2s ease, transform 0.2s ease',
 		});
-
 		document.body.appendChild(interactionTextElement);
 	}
-
 	// Only update text if it changed
 	if (interactionTextElement.innerText !== message) {
 		interactionTextElement.innerText = message;
 	}
-
 	// Store HUD ID for later use
 	hud = hudId;
-
 	// Use GPU-accelerated animations
 	interactionTextElement.style.display = 'block';
-
 	// Use requestAnimationFrame for smoother animation
 	requestAnimationFrame(() => {
 		interactionTextElement.style.opacity = '1';
@@ -970,16 +961,13 @@ function showInteractionText(message, hudId) {
 
 function hideInteractionText() {
 	if (!interactionTextElement) return;
-
 	interactionTextElement.style.opacity = '0';
 	interactionTextElement.style.transform = 'translate(-50%, 10px)';
-
 	// Reset HUD ID
 	hud = 'na';
 }
 
-// Optimize the interaction handler for faster response
-// Optimize the interaction handler for faster response
+// FIX: Improved interaction handler with safeguards against stuck states
 function createInteractionHandler(camera, movement, objects) {
 	let activeObject = null;
 	let isMovingToTarget = false;
@@ -988,7 +976,7 @@ function createInteractionHandler(camera, movement, objects) {
 	let moveProgress = 0;
 	let moveDuration = 1.0; // seconds
 	let lastInteractState = false; // Track previous interaction state
-
+	let interactionStartTime = 0; // FIX: Track when interaction started
 	const margin = 0.5;
 	const interactionCache = {
 		lastPosition: new THREE.Vector3(),
@@ -997,7 +985,24 @@ function createInteractionHandler(camera, movement, objects) {
 		cacheTTL: 200,
 	};
 
+	// FIX: Add a safety timeout to prevent stuck interactions
+	const maxInteractionTime = 5000; // 5 seconds max for any interaction
+
 	function update(currentTime, deltaTime) {
+		// FIX: Safety check - cancel any stuck interactions
+		if (
+			isMovingToTarget &&
+			currentTime - interactionStartTime > maxInteractionTime
+		) {
+			console.log('Interaction timed out - resetting state');
+			isMovingToTarget = false;
+			isProcessingInput = false;
+			if (interactionDebounceTimer) {
+				clearTimeout(interactionDebounceTimer);
+				interactionDebounceTimer = null;
+			}
+		}
+
 		// Debug logging for interaction state
 		if (movement.interact !== lastInteractState) {
 			console.log('Interaction state changed:', movement.interact);
@@ -1012,12 +1017,12 @@ function createInteractionHandler(camera, movement, objects) {
 		// Always check for interaction key state changes
 		if (movement.interact !== lastInteractState) {
 			lastInteractState = movement.interact;
-
 			// If K was just pressed and we have a detected object
 			if (
 				movement.interact &&
 				interactionCache.lastDetectedObject &&
-				!isMovingToTarget
+				!isMovingToTarget &&
+				!hudTransitionInProgress // FIX: Don't start new interaction during HUD transition
 			) {
 				console.log(
 					'Starting movement to:',
@@ -1026,6 +1031,7 @@ function createInteractionHandler(camera, movement, objects) {
 				activeObject = interactionCache.lastDetectedObject;
 				isMovingToTarget = true;
 				moveProgress = 0;
+				interactionStartTime = currentTime; // FIX: Record start time
 
 				// Store starting position and rotation for smooth transition
 				moveStartPosition.copy(camera.position);
@@ -1035,7 +1041,6 @@ function createInteractionHandler(camera, movement, objects) {
 
 		// Check for interactions more frequently on mobile
 		const checkInterval = isMobile ? 50 : interactionCheckInterval;
-
 		if (
 			currentTime - lastInteractionCheck < checkInterval &&
 			!isMovingToTarget
@@ -1044,7 +1049,6 @@ function createInteractionHandler(camera, movement, objects) {
 		} else {
 			lastInteractionCheck = currentTime;
 			const cameraPosition = camera.position;
-
 			// Always check on mobile or if we've moved significantly
 			if (
 				isMobile ||
@@ -1058,22 +1062,18 @@ function createInteractionHandler(camera, movement, objects) {
 				// Update position cache
 				interactionCache.lastPosition.copy(cameraPosition);
 				interactionCache.lastCheckTime = currentTime;
-
 				// Fast bounds check
 				let detectedObject = null;
 				let closestDistance = Infinity;
-
 				for (const obj of objects) {
 					// Calculate center point of bounds
 					const centerX = (obj.bound1.x + obj.bound2.x) / 2;
 					const centerZ = (obj.bound1.z + obj.bound2.z) / 2;
-
 					// Calculate half-width and half-depth of bounds
 					const halfWidth =
 						Math.abs(obj.bound1.x - obj.bound2.x) / 2 + margin;
 					const halfDepth =
 						Math.abs(obj.bound1.z - obj.bound2.z) / 2 + margin;
-
 					// Fast AABB check
 					if (
 						Math.abs(cameraPosition.x - centerX) <= halfWidth &&
@@ -1083,14 +1083,12 @@ function createInteractionHandler(camera, movement, objects) {
 						const distSquared =
 							Math.pow(cameraPosition.x - centerX, 2) +
 							Math.pow(cameraPosition.z - centerZ, 2);
-
 						if (distSquared < closestDistance) {
 							closestDistance = distSquared;
 							detectedObject = obj;
 						}
 					}
 				}
-
 				// Update UI only if the detected object has changed
 				if (detectedObject !== interactionCache.lastDetectedObject) {
 					console.log(
@@ -1098,7 +1096,6 @@ function createInteractionHandler(camera, movement, objects) {
 						detectedObject ? detectedObject.name : 'none'
 					);
 					interactionCache.lastDetectedObject = detectedObject;
-
 					if (detectedObject) {
 						showInteractionText(
 							`Press ${
@@ -1118,39 +1115,38 @@ function createInteractionHandler(camera, movement, objects) {
 			// Update progress based on delta time
 			moveProgress += deltaTime / moveDuration;
 			moveProgress = Math.min(moveProgress, 1.0); // Clamp to 1.0
-
 			// Use easing function for smoother motion
 			const easedProgress = easeInOutCubic(moveProgress);
-
 			// Interpolate position
 			camera.position.lerpVectors(
 				moveStartPosition,
 				activeObject.targetPosition,
 				easedProgress
 			);
-
 			// Calculate look direction
 			const lookDirection = new THREE.Vector3()
 				.subVectors(activeObject.lookAtTarget, camera.position)
 				.normalize();
-
 			// Create target quaternion
 			const targetQuaternion = new THREE.Quaternion().setFromUnitVectors(
 				new THREE.Vector3(0, 0, -1),
 				lookDirection
 			);
-
 			// Interpolate rotation
 			camera.quaternion.slerpQuaternions(
 				moveStartQuaternion,
 				targetQuaternion,
 				easedProgress
 			);
-
 			// Check if transition is complete
 			if (moveProgress >= 1.0) {
 				isMovingToTarget = false;
 				console.log('Reached target, opening HUD:', activeObject.hud);
+
+				// FIX: Reset processing flag to allow new interactions
+				setTimeout(() => {
+					isProcessingInput = false;
+				}, 100);
 
 				// Only trigger HUD opening when we've reached the target
 				if (activeObject.hud && activeObject.hud !== 'na') {
@@ -1229,12 +1225,32 @@ const bounds = {
 let prevTime = performance.now();
 const baseMoveSpeed = 2; // Increased speed value for all devices
 
+// FIX: Add a frame skip detection to prevent large jumps
+let lastFrameTime = 0;
+const maxAllowedFrameTime = 100; // ms
+
 // Standard animation loop without frame skipping
 function animate3() {
 	requestAnimationFrame(animate3);
 
 	// Calculate delta time for frame-rate independent movement
 	const currentTime = performance.now();
+
+	// FIX: Detect large frame time gaps that might indicate tab switching or sleep
+	const frameTime = currentTime - lastFrameTime;
+	lastFrameTime = currentTime;
+
+	if (frameTime > maxAllowedFrameTime) {
+		console.log(
+			`Large frame time detected: ${frameTime}ms - skipping update`
+		);
+		prevTime = currentTime; // Reset time reference
+
+		// FIX: Reset movement when returning from tab switch or sleep
+		resetAllMovement();
+		return; // Skip this frame to prevent jumps
+	}
+
 	const deltaTime = Math.min((currentTime - prevTime) / 1000, 0.1); // Cap delta time to prevent jumps
 	prevTime = currentTime;
 
@@ -1259,7 +1275,8 @@ function animate3() {
 			movement.backward ||
 			movement.left ||
 			movement.right) &&
-		activeHud
+		activeHud &&
+		!hudTransitionInProgress // FIX: Don't close during transition
 	) {
 		closeHud();
 	}
@@ -1268,15 +1285,12 @@ function animate3() {
 	controls3.getObject().getWorldDirection(velocity);
 	velocity.y = 0;
 	velocity.normalize();
-
 	const cameraPosition = controls3.getObject().position;
 	const newPosition = cameraPosition.clone();
-
 	newPosition.addScaledVector(velocity, direction.z);
 	const leftVector = new THREE.Vector3(-velocity.z, 0, velocity.x);
 	newPosition.addScaledVector(leftVector, direction.x);
 	newPosition.y = cameraPosition.y;
-
 	if (
 		newPosition.x >= bounds.minX &&
 		newPosition.x <= bounds.maxX &&
@@ -1325,12 +1339,38 @@ window.addEventListener('resize', () => {
 		camera3.aspect = window.innerWidth / window.innerHeight;
 		camera3.updateProjectionMatrix();
 		renderer3.setSize(window.innerWidth, window.innerHeight);
-
 		// Update composer size if using post-processing
 		if (!isLowEndDevice) {
 			composer.setSize(window.innerWidth, window.innerHeight);
 		}
 	}, 250); // Debounce resize events
+});
+
+// FIX: Add visibility change handler to reset state when tab becomes active again
+document.addEventListener('visibilitychange', () => {
+	if (document.visibilityState === 'visible') {
+		// Reset timers and state when returning to the tab
+		prevTime = performance.now();
+		lastFrameTime = prevTime;
+
+		// Reset any stuck interactions
+		isProcessingInput = false;
+		if (interactionDebounceTimer) {
+			clearTimeout(interactionDebounceTimer);
+			interactionDebounceTimer = null;
+		}
+
+		// Reset all movement to prevent stuck keys
+		resetAllMovement();
+
+		console.log('Tab visibility restored - reset state');
+	}
+});
+
+// FIX: Add blur event listener to reset movement when window loses focus
+window.addEventListener('blur', () => {
+	resetAllMovement();
+	console.log('Window lost focus - reset movement');
 });
 
 // Start animation loop
