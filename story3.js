@@ -1394,7 +1394,7 @@ const objects = [
 		hud: 'about_this',
 	},
 	{
-		name: '\nthe outside',
+		name: '\nthe inside',
 		bound1: new THREE.Vector3(11.5, -10.5, 11.5),
 		bound2: new THREE.Vector3(14.5, -9.5, 14.5),
 		targetPosition: new THREE.Vector3(0.285, 0, -10.99),
