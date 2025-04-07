@@ -53,7 +53,7 @@ if (container3) {
 
 if (isMobile == true) {
 	document.getElementById('text').innerText =
-		'Long press to move.\n\n Move your finger to look around.';
+		'\n\nLong press to move.\n\n Move your finger to look around.';
 }
 const loadingManager = new THREE.LoadingManager(
 	() => {
@@ -61,6 +61,9 @@ const loadingManager = new THREE.LoadingManager(
 		setTimeout(() => {
 			loaderElement.style.animation = 'fadeOut 0.5s ease-in-out forwards';
 			setTimeout(() => {
+				loaderElement.style.display = 'none';
+				directions.style.display = 'block';
+
 				setTimeout(() => {
 					directions.style.animation =
 						'fadeOut 0.5s ease-in-out forwards';
@@ -68,8 +71,6 @@ const loadingManager = new THREE.LoadingManager(
 						directions.style.display = 'none';
 					}, 500);
 				}, 5000);
-
-				loaderElement.style.display = 'none';
 			}, 500);
 		}, 100);
 		// Add touch controls for mobile after loading completes
@@ -219,7 +220,7 @@ function addTouchControls() {
 	let isMovingForward = false;
 	let isMovingBackward = false;
 	const doubleTapThreshold = 100;
-	const touchLookSensitivity = 0.01; // Adjusted sensitivity
+	const touchLookSensitivity = 0.005; // Adjusted sensitivity
 
 	touchArea.addEventListener('touchstart', (e) => {
 		e.preventDefault();
@@ -595,7 +596,7 @@ const fontLoader = new THREE.FontLoader();
 fontLoader.load('assets/Hyper Scrypt Stencil_Regular.json', function (font) {
 	// Create text with standard detail
 	const textGeometry = new THREE.TextGeometry(
-		'\n                        \nNico Escovilla \n                        ',
+		'\n                        \n\n                        ',
 		{
 			font: font,
 			size: 0.1,
