@@ -141,24 +141,32 @@ const outsideLight3 = new THREE.PointLight(
 outsideLight3.position.set(-4, 0.1, -4);
 scene3.add(outsideLight3);
 // Optimized light flickering
+
 let flickerTimer = null;
+
 function flickerLight() {
 	if (flickerTimer) return; // Prevent multiple concurrent flickers
+
 	const originalIntensity = 5;
 	const flickerDuration = 500;
-	// Use a less frequent interval for flickering
+
+	// Use a more intense range for flickering and faster interval
 	flickerTimer = setInterval(() => {
-		const randomIntensity = 0.5 + Math.random() * 0.7;
+		const randomIntensity = 5 + Math.random() * 12; // Intensity range between 5 and 8
 		lg3.intensity = randomIntensity;
 		lg1.intensity = randomIntensity;
 		lg5.intensity = randomIntensity;
-	}, 100);
+	}, 50); // Shorter interval for more frequent flickers
+
+	// Reset the lights after the flicker duration
 	setTimeout(() => {
 		clearInterval(flickerTimer);
 		flickerTimer = null;
-		lg3.intensity = Math.random() < 0.3 ? 5 : 0;
-		lg1.intensity = 3;
-		lg5.intensity = originalIntensity;
+
+		// Reset intensities with higher values as well
+		lg3.intensity = Math.random() < 0.5 ? 7 : 0; // Randomly switch between high and off
+		lg1.intensity = 7; // Keep high intensity
+		lg5.intensity = originalIntensity; // Reset to the original intensity
 	}, flickerDuration);
 }
 // Standard flickering interval
