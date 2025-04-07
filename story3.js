@@ -45,6 +45,7 @@ const renderer3 = new THREE.WebGLRenderer({
 });
 // Use device's native pixel ratio
 const pixelRatio = Math.min(window.devicePixelRatio, 2);
+
 renderer3.setSize(window.innerWidth, window.innerHeight);
 renderer3.setPixelRatio(pixelRatio);
 // Append renderer
