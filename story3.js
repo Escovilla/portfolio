@@ -368,19 +368,19 @@ function addTouchControls() {
 	});
 	document.body.appendChild(moveIndicator);
 	// Function to update the movement indicator
-	function updateMoveIndicator() {
-		if (isMovingForward) {
-			moveIndicator.textContent = 'Moving Forward';
-			moveIndicator.style.opacity = '1';
-		} else if (isMovingBackward) {
-			moveIndicator.textContent = 'Moving Backward';
-			moveIndicator.style.opacity = '1';
-		} else {
-			moveIndicator.style.opacity = '0';
-		}
-		requestAnimationFrame(updateMoveIndicator);
-	}
-	updateMoveIndicator();
+	// function updateMoveIndicator() {
+	// 	if (isMovingForward) {
+	// 		moveIndicator.textContent = '';
+	// 		moveIndicator.style.opacity = '1';
+	// 	} else if (isMovingBackward) {
+	// 		moveIndicator.textContent = '';
+	// 		moveIndicator.style.opacity = '1';
+	// 	} else {
+	// 		moveIndicator.style.opacity = '0';
+	// 	}
+	// 	requestAnimationFrame(updateMoveIndicator);
+	// }
+	// updateMoveIndicator();
 	console.log('New touch controls added with long-press movement');
 }
 
@@ -1117,6 +1117,47 @@ function performHudOpen(hudId, hudElement) {
 // }
 
 // Optimized UI elements
+// function showInteractionText(message, hudId) {
+// 	if (!interactionTextElement) {
+// 		interactionTextElement = document.createElement('div');
+// 		interactionTextElement.id = 'interaction-text';
+// 		// Use transform instead of position for better performance
+// 		Object.assign(interactionTextElement.style, {
+// 			position: 'absolute',
+// 			bottom: '11%',
+// 			left: '21%',
+// 			transform: 'translate(-50%, 0)',
+// 			padding: '30px',
+// 			textAlign: 'center',
+// 			borderRadius: '15px',
+// 			background: 'transparent',
+// 			color: 'rgba(255, 250, 250, 0.644)',
+// 			fontSize: '28px',
+// 			fontWeight: 'bold',
+// 			textShadow: '0 0 20px rgba(255, 255, 255, 0.5)',
+// 			fontFamily: 'cool',
+// 			pointerEvents: 'none', // Prevent interaction with the text
+// 			willChange: 'opacity, transform', // Hint for browser optimization
+// 			opacity: '0',
+// 			transition: 'opacity 0.2s ease, transform 0.2s ease',
+// 		});
+// 		document.body.appendChild(interactionTextElement);
+// 	}
+// 	// Only update text if it changed
+// 	if (interactionTextElement.innerText !== message) {
+// 		interactionTextElement.innerText = message;
+// 	}
+// 	// Store HUD ID for later use
+// 	hud = hudId;
+// 	// Use GPU-accelerated animations
+// 	interactionTextElement.style.display = 'block';
+// 	// Use requestAnimationFrame for smoother animation
+// 	requestAnimationFrame(() => {
+// 		interactionTextElement.style.opacity = '1';
+// 		interactionTextElement.style.transform = 'translate(-50%, 0)';
+// 	});
+// }
+
 function showInteractionText(message, hudId) {
 	if (!interactionTextElement) {
 		interactionTextElement = document.createElement('div');
@@ -1124,37 +1165,45 @@ function showInteractionText(message, hudId) {
 		// Use transform instead of position for better performance
 		Object.assign(interactionTextElement.style, {
 			position: 'absolute',
-			bottom: '11%',
-			left: '21%',
-			transform: 'translate(-50%, 0)',
-			padding: '30px',
-			textAlign: 'center',
+			bottom: isMobile ? '120px' : '11%', // Above mobile controls
+			left: '20px', // Stick to left side
+			transform: 'translate(0, 0)', // Remove horizontal centering
+			padding: isMobile ? '15px' : '30px',
+			textAlign: 'center', // Left align text
 			borderRadius: '15px',
 			background: 'transparent',
 			color: 'rgba(255, 250, 250, 0.644)',
-			fontSize: '28px',
+			fontSize: isMobile ? '26px' : '28px',
 			fontWeight: 'bold',
 			textShadow: '0 0 20px rgba(255, 255, 255, 0.5)',
+			backdropFilter: 'blur(10px)',
+			WebkitBackdropFilter: 'blur(10px)',
 			fontFamily: 'cool',
-			pointerEvents: 'none', // Prevent interaction with the text
-			willChange: 'opacity, transform', // Hint for browser optimization
+			pointerEvents: 'none',
+			willChange: 'opacity, transform',
 			opacity: '0',
 			transition: 'opacity 0.2s ease, transform 0.2s ease',
+			maxWidth: isMobile ? '250px' : 'none', // Control text width on mobile
+			wordWrap: 'break-word',
 		});
 		document.body.appendChild(interactionTextElement);
 	}
+
 	// Only update text if it changed
 	if (interactionTextElement.innerText !== message) {
 		interactionTextElement.innerText = message;
 	}
+
 	// Store HUD ID for later use
 	hud = hudId;
+
 	// Use GPU-accelerated animations
 	interactionTextElement.style.display = 'block';
+
 	// Use requestAnimationFrame for smoother animation
 	requestAnimationFrame(() => {
 		interactionTextElement.style.opacity = '1';
-		interactionTextElement.style.transform = 'translate(-50%, 0)';
+		interactionTextElement.style.transform = 'translate(0, 0)';
 	});
 }
 
@@ -1299,7 +1348,7 @@ function createInteractionHandler(camera, movement, objects) {
 						showInteractionText(
 							`Press ${
 								isMobile ? 'K Button' : 'K'
-							} to interact with ${detectedObject.name}`,
+							} to interact with  ${detectedObject.name}`,
 							detectedObject.hud
 						);
 					} else {
