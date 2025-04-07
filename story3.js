@@ -1173,7 +1173,7 @@ function showInteractionText(message, hudId) {
 		// Use transform instead of position for better performance
 		Object.assign(interactionTextElement.style, {
 			position: 'absolute',
-			bottom: isMobile ? '120px' : '11%', // Above mobile controls
+			bottom: isMobile ? '20px' : '11%', // Above mobile controls
 			left: '20px', // Stick to left side
 			transform: 'translate(0, 0)', // Remove horizontal centering
 			padding: isMobile ? '15px' : '30px',
