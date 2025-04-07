@@ -306,24 +306,6 @@ function addTouchControls() {
 	document.body.appendChild(touchArea);
 
 	// Create interact button on the right
-	const interactButton = document.createElement('button');
-	interactButton.id = 'interact';
-	interactButton.innerText = 'K';
-	Object.assign(interactButton.style, {
-		position: 'fixed',
-		bottom: '20px',
-		right: '20px',
-		width: '80px',
-		height: '80px',
-		fontSize: '24px',
-		borderRadius: '50%',
-		backgroundColor: 'rgba(255, 165, 0, 0.7)',
-		border: '2px solid white',
-		color: 'white',
-		fontWeight: 'bold',
-		pointerEvents: 'auto',
-		zIndex: '1001',
-	});
 
 	// FIX: Add debounce to interact button to prevent multiple rapid activations
 	interactButton.addEventListener('touchstart', (e) => {
@@ -1166,49 +1148,134 @@ function performHudOpen(hudId, hudElement) {
 // 	});
 // }
 
+// function showInteractionText(message, hudId) {
+// 	if (!interactionTextElement) {
+// 		interactionTextElement = document.createElement('div');
+// 		interactionTextElement.id = 'interaction-text';
+// 		// Use transform instead of position for better performance
+// 		Object.assign(interactionTextElement.style, {
+// 			position: 'absolute',
+// 			bottom: isMobile ? '20px' : '11%', // Above mobile controls
+// 			left: '20%', // Stick to left side
+// 			transform: 'translate(0, 0)', // Remove horizontal centering
+// 			padding: isMobile ? '15px' : '30px',
+// 			textAlign: 'center', // Left align text
+// 			borderRadius: '15px',
+// 			background: 'transparent',
+// 			color: 'rgba(255, 250, 250, 0.644)',
+// 			fontSize: isMobile ? '18px' : '28px',
+// 			fontWeight: 'bold',
+// 			textShadow: '0 0 20px rgba(255, 255, 255, 0.5)',
+// 			backdropFilter: isMobile ? 'blur(5px)' : 'blur(10px)',
+// 			WebkitBackdropFilter: isMobile ? 'blur(5px)' : 'blur(10px)',
+// 			fontFamily: 'cool',
+// 			pointerEvents: 'none',
+// 			willChange: 'opacity, transform',
+// 			opacity: '0',
+// 			transition: 'opacity 0.2s ease, transform 0.2s ease',
+// 			maxWidth: isMobile ? '250px' : 'none', // Control text width on mobile
+// 			wordWrap: 'break-word',
+// 		});
+// 		document.body.appendChild(interactionTextElement);
+// 	}
+
+// 	// Only update text if it changed
+// 	if (interactionTextElement.innerText !== message) {
+// 		interactionTextElement.innerText = message;
+// 	}
+
+// 	// Store HUD ID for later use
+// 	hud = hudId;
+
+// 	// Use GPU-accelerated animations
+// 	interactionTextElement.style.display = 'block';
+
+// 	// Use requestAnimationFrame for smoother animation
+// 	requestAnimationFrame(() => {
+// 		interactionTextElement.style.opacity = '1';
+// 		interactionTextElement.style.transform = 'translate(0, 0)';
+// 	});
+// }
+
 function showInteractionText(message, hudId) {
 	if (!interactionTextElement) {
 		interactionTextElement = document.createElement('div');
 		interactionTextElement.id = 'interaction-text';
-		// Use transform instead of position for better performance
+
+		// Modified styles for mobile interaction
 		Object.assign(interactionTextElement.style, {
-			position: 'absolute',
-			bottom: isMobile ? '20px' : '11%', // Above mobile controls
-			left: '20px', // Stick to left side
-			transform: 'translate(0, 0)', // Remove horizontal centering
+			position: isMobile ? 'sticky' : 'absolute',
+			bottom: isMobile ? '20px' : '11%',
+			left: isMobile ? '0' : '20%', // Center on mobile
+			transform: isMobile ? 'translateX(-50%)' : 'translate(0, 0)', // Center transform on mobile
 			padding: isMobile ? '15px' : '30px',
-			textAlign: 'center', // Left align text
+			textAlign: 'center',
 			borderRadius: '15px',
-			background: 'transparent',
+			background: isMobile ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
 			color: 'rgba(255, 250, 250, 0.644)',
 			fontSize: isMobile ? '18px' : '28px',
 			fontWeight: 'bold',
 			textShadow: '0 0 20px rgba(255, 255, 255, 0.5)',
-			backdropFilter: 'blur(10px)',
-			WebkitBackdropFilter: 'blur(10px)',
+			backdropFilter: isMobile ? 'blur(5px)' : 'blur(10px)',
+			WebkitBackdropFilter: isMobile ? 'blur(5px)' : 'blur(10px)',
 			fontFamily: 'cool',
-			pointerEvents: 'none',
+			pointerEvents: isMobile ? 'auto' : 'none',
+			cursor: isMobile ? 'pointer' : 'default',
 			willChange: 'opacity, transform',
 			opacity: '0',
 			transition: 'opacity 0.2s ease, transform 0.2s ease',
-			maxWidth: isMobile ? '250px' : 'none', // Control text width on mobile
+			maxWidth: isMobile ? '80%' : 'none', // Responsive width on mobile
 			wordWrap: 'break-word',
+			margin: '0 auto', // Center horizontally
+			zIndex: '1000', // Ensure it's above other elements
 		});
+
+		// Add touch event listeners for mobile
+		if (isMobile) {
+			interactionTextElement.addEventListener('touchstart', (e) => {
+				e.preventDefault();
+				if (isProcessingInput || interactionDebounceTimer) return;
+
+				isProcessingInput = true;
+				movement.interact = true;
+				clicked = true;
+
+				// Visual feedback
+				interactionTextElement.style.opacity = '0.5';
+
+				// Set debounce timer
+				interactionDebounceTimer = setTimeout(() => {
+					interactionDebounceTimer = null;
+				}, interactionDebounceDelay);
+			});
+
+			interactionTextElement.addEventListener('touchend', () => {
+				movement.interact = false;
+				clicked = false;
+				interactionTextElement.style.opacity = '1';
+
+				// Reset processing flag after a short delay
+				setTimeout(() => {
+					isProcessingInput = false;
+				}, 100);
+			});
+		}
+
 		document.body.appendChild(interactionTextElement);
 	}
 
-	// Only update text if it changed
-	if (interactionTextElement.innerText !== message) {
-		interactionTextElement.innerText = message;
+	// Update message text - remove "Press K" for mobile
+	const displayMessage = isMobile
+		? message.replace('Press K Button to interact with', 'Tap to view')
+		: message;
+
+	if (interactionTextElement.innerText !== displayMessage) {
+		interactionTextElement.innerText = displayMessage;
 	}
 
-	// Store HUD ID for later use
 	hud = hudId;
-
-	// Use GPU-accelerated animations
 	interactionTextElement.style.display = 'block';
 
-	// Use requestAnimationFrame for smoother animation
 	requestAnimationFrame(() => {
 		interactionTextElement.style.opacity = '1';
 		interactionTextElement.style.transform = 'translate(0, 0)';
