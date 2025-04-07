@@ -4,6 +4,8 @@ const progressBar = document.getElementById('file');
 const loaded = document.getElementById('loaded');
 loaded.innerHTML = 'Loading: Initializing...';
 let loadedModelsCount = 0;
+let activeHud = null;
+
 const totalModels = 0;
 // Device capability detection - only detect truly low-end devices
 const isMobile =
@@ -171,7 +173,6 @@ const keyEventThrottleDelay = 10;
 // Initialize variables needed by interaction system
 let hud = 'na';
 let clicked = false;
-let activeHud = null;
 let interactionTextElement = null;
 let lastInteractionCheck = 0;
 let hudTransitionInProgress = false;
@@ -224,6 +225,12 @@ function addTouchControls() {
 
 	touchArea.addEventListener('touchstart', (e) => {
 		e.preventDefault();
+
+		directions.style.animation = 'fadeOut 0.5s ease-in-out forwards';
+		setTimeout(() => {
+			directions.style.display = 'none';
+		}, 500);
+
 		if (isProcessingInput) return;
 
 		touchActive = true;
@@ -377,68 +384,136 @@ function addTouchControls() {
 	console.log('New touch controls added with long-press movement');
 }
 
-document.addEventListener('mousedown', () => {
-	controls3.lock();
+// document.addEventListener('mousedown', () => {
+
+// 	controls3.lock();
+// });
+
+let pressTimer = null;
+let pressStarted = false;
+const PRESS_DURATION = 500; // 1 second in milliseconds
+
+// Add visual feedback element
+const pressIndicator = document.createElement('div');
+pressIndicator.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.2);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 1000;
+`;
+
+// Add the fill line
+const fillLine = document.createElement('div');
+fillLine.style.cssText = `
+    width: 0%;
+    height: 100%;
+    background: white;
+    transition: width ${PRESS_DURATION}ms linear;
+`;
+
+pressIndicator.appendChild(fillLine);
+document.body.appendChild(pressIndicator);
+
+function startPressAnimation() {
+	pressIndicator.style.opacity = '1';
+	fillLine.style.width = '100%';
+}
+
+function stopPressAnimation() {
+	pressIndicator.style.opacity = '0';
+	fillLine.style.width = '0%';
+}
+
+document.addEventListener('mousedown', (e) => {
+	// Don't start press timer if HUD is open or controls are already locked
+	if (
+		activeHud == 'about_me' ||
+		activeHud == 'projects' ||
+		controls3.isLocked
+	)
+		return;
+	directions.style.animation = 'fadeOut 0.5s ease-in-out forwards';
+	setTimeout(() => {
+		directions.style.display = 'none';
+	}, 500);
+	pressStarted = true;
+	startPressAnimation();
+
+	pressTimer = setTimeout(() => {
+		if (pressStarted) {
+			controls3.lock();
+			stopPressAnimation();
+		}
+	}, PRESS_DURATION);
 });
 
-// FIX: Completely rewritten keyboard handling to prevent stuck movement
-document.addEventListener('keydown', (event) => {
-	if (event.code === 'Escape') {
-		controls3.unlock();
-		return;
+document.addEventListener('mouseup', () => {
+	if (!pressStarted) return; // Only respond if we started a press
+
+	pressStarted = false;
+	if (pressTimer) {
+		clearTimeout(pressTimer);
+		pressTimer = null;
 	}
+	stopPressAnimation();
+});
 
-	// Handle K key for interaction
-	if (event.code === 'KeyK') {
-		if (isProcessingInput || interactionDebounceTimer) return;
-
-		isProcessingInput = true;
-		movement.interact = true;
-		clicked = true;
-
-		// Set debounce timer
-		interactionDebounceTimer = setTimeout(() => {
-			interactionDebounceTimer = null;
-		}, interactionDebounceDelay);
-
-		return;
-	}
-
-	// Track key state
-	if (event.code in keyStates) {
-		keyStates[event.code] = true;
-
-		// Update movement based on current key states
-		updateMovementFromKeyStates();
-
-		// Close HUD when movement keys are pressed
-		if (activeHud && !hudTransitionInProgress) {
-			closeHud();
+document.addEventListener('mousemove', (e) => {
+	if (pressStarted) {
+		// Cancel the press if mouse moves too much
+		const moveThreshold = 5;
+		if (
+			Math.abs(e.movementX) > moveThreshold ||
+			Math.abs(e.movementY) > moveThreshold
+		) {
+			pressStarted = false;
+			if (pressTimer) {
+				clearTimeout(pressTimer);
+				pressTimer = null;
+			}
+			stopPressAnimation();
 		}
 	}
 });
 
-document.addEventListener('keyup', (event) => {
-	// Handle K key immediately
-	if (event.code === 'KeyK') {
-		movement.interact = false;
-		clicked = false;
-
-		// Reset processing flag after a short delay
-		setTimeout(() => {
-			isProcessingInput = false;
-		}, 100);
-
-		return;
+// Clean up when pointer lock changes
+document.addEventListener('pointerlockchange', () => {
+	if (!document.pointerLockElement) {
+		pressStarted = false;
+		if (pressTimer) {
+			clearTimeout(pressTimer);
+			pressTimer = null;
+		}
+		stopPressAnimation();
 	}
+});
 
-	// Update key state
-	if (event.code in keyStates) {
-		keyStates[event.code] = false;
-
-		// Update movement based on current key states
-		updateMovementFromKeyStates();
+// Clean up when tab/window loses focus
+document.addEventListener('visibilitychange', () => {
+	if (document.hidden) {
+		pressStarted = false;
+		if (pressTimer) {
+			clearTimeout(pressTimer);
+			pressTimer = null;
+		}
+		stopPressAnimation();
 	}
+});
+
+window.addEventListener('blur', () => {
+	pressStarted = false;
+	if (pressTimer) {
+		clearTimeout(pressTimer);
+		pressTimer = null;
+	}
+	stopPressAnimation();
 });
 
 // FIX: New function to update movement based on key states
@@ -448,7 +523,10 @@ function updateMovementFromKeyStates() {
 	movement.backward = keyStates.KeyS ? 1 : 0;
 	movement.left = keyStates.KeyA ? 1 : 0;
 	movement.right = keyStates.KeyD ? 1 : 0;
-
+	directions.style.animation = 'fadeOut 0.5s ease-in-out forwards';
+	setTimeout(() => {
+		directions.style.display = 'none';
+	}, 500);
 	// If opposing keys are pressed, cancel out the movement
 	if (movement.forward && movement.backward) {
 		movement.forward = 0;
@@ -802,16 +880,63 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 });
 
+const handleKeyDown = (event) => {
+	if (event.code === 'Escape') {
+		controls3.unlock();
+		return;
+	}
+	// Handle K key for interaction
+	if (event.code === 'KeyK') {
+		if (isProcessingInput || interactionDebounceTimer) return;
+		isProcessingInput = true;
+		movement.interact = true;
+		clicked = true;
+		// Set debounce timer
+		interactionDebounceTimer = setTimeout(() => {
+			interactionDebounceTimer = null;
+		}, interactionDebounceDelay);
+		return;
+	}
+	// Track key state
+	if (event.code in keyStates) {
+		keyStates[event.code] = true;
+		// Update movement based on current key states
+		updateMovementFromKeyStates();
+	}
+};
+
+const handleKeyUp = (event) => {
+	// Handle K key immediately
+	if (event.code === 'KeyK') {
+		movement.interact = false;
+		clicked = false;
+		// Reset processing flag after a short delay
+		setTimeout(() => {
+			isProcessingInput = false;
+		}, 100);
+		return;
+	}
+	// Update key state
+	if (event.code in keyStates) {
+		keyStates[event.code] = false;
+		// Update movement based on current key states
+		updateMovementFromKeyStates();
+	}
+};
+
 // FIX: Improved HUD management with safeguards against multiple operations
 function openHud(hudId) {
-	// FIX: Prevent multiple HUD operations at once
 	if (hudTransitionInProgress) {
 		console.log('HUD transition already in progress, ignoring request');
 		return;
 	}
 
 	hudTransitionInProgress = true;
-	hideInteractionText();
+	console.log(hudId);
+	if (hudId == 'about_me' || hudId == 'projects') {
+		hideInteractionText();
+	}
+	//
 
 	const hudElement = document.getElementById(hudId);
 	if (!hudElement) {
@@ -819,10 +944,11 @@ function openHud(hudId) {
 		return;
 	}
 
-	// Close any existing HUD first
+	// Disable all controls
+	disableControls(hudId);
+
 	if (activeHud) {
 		closeHud(true).then(() => {
-			// Now open the new HUD
 			performHudOpen(hudId, hudElement);
 		});
 	} else {
@@ -830,38 +956,7 @@ function openHud(hudId) {
 	}
 }
 
-// FIX: Separate function to perform the actual HUD opening
-function performHudOpen(hudId, hudElement) {
-	// Pause rendering during HUD transition to prevent stuttering
-	if (!isMobile) {
-		controls3.unlock();
-	}
-
-	// Prepare element for animation
-	hudElement.style.display = 'block';
-	hudElement.style.opacity = '0';
-	hudElement.style.transform = 'translateY(20px)';
-
-	// Force a reflow to ensure the transition works
-	void hudElement.offsetWidth;
-
-	// Add transition properties
-	hudElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-
-	// Use requestAnimationFrame for smoother transitions
-	requestAnimationFrame(() => {
-		hudElement.style.opacity = '1';
-		hudElement.style.transform = 'translateY(0)';
-
-		// Update active HUD and clear transition flag after animation completes
-		setTimeout(() => {
-			activeHud = hudId;
-			hudTransitionInProgress = false;
-		}, 300);
-	});
-}
-
-// Improved HUD closing with promise for chaining
+// Modified closeHud function
 function closeHud(isChained = false) {
 	return new Promise((resolve) => {
 		if (!activeHud || activeHud === 'na') {
@@ -870,7 +965,6 @@ function closeHud(isChained = false) {
 			return;
 		}
 
-		// FIX: Prevent multiple close operations
 		if (hudTransitionInProgress && !isChained) {
 			console.log(
 				'HUD transition already in progress, ignoring close request'
@@ -880,8 +974,8 @@ function closeHud(isChained = false) {
 		}
 
 		hudTransitionInProgress = true;
-
 		const hudElement = document.getElementById(activeHud);
+
 		if (!hudElement) {
 			activeHud = null;
 			hudTransitionInProgress = false;
@@ -889,23 +983,17 @@ function closeHud(isChained = false) {
 			return;
 		}
 
-		// Add transition properties if not already set
-		if (!hudElement.style.transition) {
-			hudElement.style.transition =
-				'opacity 0.3s ease, transform 0.3s ease';
-		}
-
-		// Use GPU-accelerated transitions
 		hudElement.style.opacity = '0';
 		hudElement.style.transform = 'translateY(20px)';
 
-		// Only hide after transition completes
 		setTimeout(() => {
 			hudElement.style.display = 'none';
 			const previousHud = activeHud;
 			activeHud = null;
 
-			// If not chained, lock controls again
+			// Re-enable controls
+			enableControls();
+
 			if (!isChained && !isMobile) {
 				requestAnimationFrame(() => {
 					controls3.lock();
@@ -917,6 +1005,116 @@ function closeHud(isChained = false) {
 		}, 300);
 	});
 }
+
+// New control management functions
+function disableControls(activeHud) {
+	// Disable mobile controls
+
+	// Disable keyboard controls
+	console.log(activeHud);
+	if (activeHud == 'about_me' || activeHud == 'projects') {
+		if (isMobile) {
+			const touchArea = document.getElementById('touch-area');
+			const interactButton = document.getElementById('interact');
+			if (touchArea) touchArea.style.pointerEvents = 'none';
+			if (interactButton) interactButton.style.pointerEvents = 'none';
+		}
+
+		resetAllMovement();
+		document.removeEventListener('keydown', handleKeyDown);
+		document.removeEventListener('keyup', handleKeyUp);
+
+		if (controls3.isLocked) {
+			controls3.unlock();
+		}
+	}
+
+	// Unlock pointer if needed
+}
+
+function enableControls() {
+	// Enable mobile controls
+	if (isMobile) {
+		const touchArea = document.getElementById('touch-area');
+		const interactButton = document.getElementById('interact');
+		if (touchArea) touchArea.style.pointerEvents = 'auto';
+		if (interactButton) interactButton.style.pointerEvents = 'auto';
+	}
+
+	// Enable keyboard controls
+	document.addEventListener('keydown', handleKeyDown);
+	document.addEventListener('keyup', handleKeyUp);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+	// Initialize close buttons
+	document.querySelectorAll('.close-hud').forEach((button) => {
+		button.addEventListener('click', (e) => {
+			e.stopPropagation();
+			closeHud();
+		});
+	});
+
+	// Add initial keyboard listeners
+	document.addEventListener('keydown', handleKeyDown);
+	document.addEventListener('keyup', handleKeyUp);
+});
+
+function performHudOpen(hudId, hudElement) {
+	// Ensure controls are disabled
+	disableControls(hudId);
+
+	// Prepare element for animation
+	hudElement.style.display = 'block';
+	hudElement.style.opacity = '0';
+	hudElement.style.transform = 'translateY(20px)';
+
+	// Force a reflow
+	void hudElement.offsetWidth;
+
+	// Add transition properties
+	hudElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+
+	// Animate
+	requestAnimationFrame(() => {
+		hudElement.style.opacity = '1';
+		hudElement.style.transform = 'translateY(0)';
+
+		// Update active HUD and clear transition flag after animation
+		setTimeout(() => {
+			activeHud = hudId;
+			hudTransitionInProgress = false;
+		}, 300);
+	});
+}
+// FIX: Separate function to perform the actual HUD opening
+// function performHudOpen(hudId, hudElement) {
+// 	// Ensure controls are disabled
+// 	disableControls();
+
+// 	// Prepare element for animation
+// 	hudElement.style.display = 'block';
+// 	hudElement.style.opacity = '0';
+// 	hudElement.style.transform = 'translateY(20px)';
+
+// 	// Force a reflow
+// 	void hudElement.offsetWidth;
+
+// 	// Add transition properties
+// 	hudElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+
+// 	// Animate
+// 	requestAnimationFrame(() => {
+// 		hudElement.style.opacity = '1';
+// 		hudElement.style.transform = 'translateY(0)';
+
+// 		// Update active HUD and clear transition flag after animation
+// 		setTimeout(() => {
+// 			activeHud = hudId;
+// 			hudTransitionInProgress = false;
+// 		}, 300);
+// 	});
+// }
 
 // Optimized UI elements
 function showInteractionText(message, hudId) {
