@@ -36,7 +36,6 @@ camera3.position.set(-0.2, 0, 10);
 // Renderer with standard settings
 const renderer3 = new THREE.WebGLRenderer({
 	// antialias: !isLowEndDevice,
-	precision: isLowEndDevice ? 'highp' : 'highp',
 	powerPreference: 'high-performance',
 	antialias: true, // Enable antialiasing for mobile
 	precision: 'highp',
@@ -98,7 +97,7 @@ const loadingManager = new THREE.LoadingManager(
 	}
 );
 // Standard lighting setup with all original lights
-const isMobileBrightnessBoost = isMobile ? 8 : 0; // Brightness boost for mobile
+const isMobileBrightnessBoost = isMobile ? -4 : 0; // Brightness boost for mobile
 const lg1 = new THREE.PointLight(0xffffff, 5 + isMobileBrightnessBoost, 6); //last light
 lg1.position.set(0, -2, -11);
 scene3.add(lg1);
@@ -114,7 +113,7 @@ scene3.add(lg4);
 const lg5 = new THREE.PointLight(0xffffff, 5 + isMobileBrightnessBoost, 6);
 lg5.position.set(0, -2, 10);
 scene3.add(lg5);
-const lg6 = new THREE.PointLight(0xffffff, 5, 5);
+const lg6 = new THREE.PointLight(0xffffff, 5 + isMobileBrightnessBoost, 5);
 lg6.position.set(0, -2, 7);
 scene3.add(lg6);
 const blueLightRight3 = new THREE.PointLight(
@@ -157,7 +156,7 @@ function flickerLight() {
 
 	// Use a more intense range for flickering and faster interval
 	flickerTimer = setInterval(() => {
-		const randomIntensity = 5 + Math.random() * 12; // Intensity range between 5 and 8
+		const randomIntensity = 5 + Math.random() * 2; // Intensity range between 5 and 8
 		lg3.intensity = randomIntensity;
 		lg1.intensity = randomIntensity;
 		lg5.intensity = randomIntensity;
@@ -169,8 +168,8 @@ function flickerLight() {
 		flickerTimer = null;
 
 		// Reset intensities with higher values as well
-		lg3.intensity = Math.random() < 0.5 ? 7 : 0; // Randomly switch between high and off
-		lg1.intensity = 7; // Keep high intensity
+		lg3.intensity = Math.random() < 0.5 ? 3 : 0; // Randomly switch between high and off
+		lg1.intensity = 4; // Keep high intensity
 		lg5.intensity = originalIntensity; // Reset to the original intensity
 	}, flickerDuration);
 }
@@ -194,7 +193,7 @@ const interactionCheckInterval = 100;
 let touchLookActive = false;
 let touchX = 0;
 let touchY = 0;
-let touchLookSensitivity = 0.07;
+let touchLookSensitivity = 0.05;
 
 // FIX: Add a flag to track input processing state
 let isProcessingInput = false;
@@ -219,7 +218,7 @@ function addTouchControls() {
 		top: '0',
 		left: '0',
 		width: '100%',
-		height: '80%',
+		height: '100%',
 		zIndex: '900',
 		pointerEvents: 'auto',
 	});
@@ -762,7 +761,7 @@ const renderPass = new THREE.RenderPass(scene3, camera3);
 composer.addPass(renderPass);
 // Add post-processing effects for all devices except very low-end ones
 let grainPass;
-if (!isLowEndDevice) {
+if (!isMobile) {
 	// Grain Shader
 	const grainShader = {
 		uniforms: {
@@ -799,53 +798,6 @@ if (!isLowEndDevice) {
 	const bloomPass = new THREE.UnrealBloomPass(
 		new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2),
 		0.5,
-		0.4,
-		0.1
-	);
-	composer.addPass(bloomPass);
-	// Add FXAA
-	const fxaaPass = new THREE.ShaderPass(THREE.FXAAShader);
-	fxaaPass.uniforms['resolution'].value.set(
-		1 / (window.innerWidth * 0.75),
-		1 / (window.innerHeight * 0.75)
-	);
-	composer.addPass(fxaaPass);
-} else {
-	const grainShader = {
-		uniforms: {
-			tDiffuse: { value: null },
-			time: { value: 0.0 },
-			amount: { value: 0.156 },
-		},
-		vertexShader: `
-            varying vec2 vUv;
-            void main() {
-                vUv = uv;
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-            }
-        `,
-		fragmentShader: `
-            uniform sampler2D tDiffuse;
-            uniform float time;
-            uniform float amount;
-            varying vec2 vUv;
-            float random(vec2 co) {
-                return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-            }
-            void main() {
-                vec4 color = texture2D(tDiffuse, vUv);
-                float grain = random(vUv + time) * amount;
-                color.rgb += vec3(grain);
-                gl_FragColor = color;
-            }
-        `,
-	};
-	grainPass = new THREE.ShaderPass(grainShader);
-	composer.addPass(grainPass);
-	// Add Bloom Effect
-	const bloomPass = new THREE.UnrealBloomPass(
-		new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2),
-		0.1,
 		0.4,
 		0.1
 	);
@@ -1654,7 +1606,6 @@ function animate3() {
 		grainPass.uniforms.time.value += 0.01;
 		composer.render();
 	} else {
-		grainPass.uniforms.time.value += 0.00009;
 		composer.render();
 	}
 }
