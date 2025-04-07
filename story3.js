@@ -1181,7 +1181,7 @@ function showInteractionText(message, hudId) {
 			borderRadius: '15px',
 			background: 'transparent',
 			color: 'rgba(255, 250, 250, 0.644)',
-			fontSize: isMobile ? '26px' : '28px',
+			fontSize: isMobile ? '18px' : '28px',
 			fontWeight: 'bold',
 			textShadow: '0 0 20px rgba(255, 255, 255, 0.5)',
 			backdropFilter: 'blur(10px)',
