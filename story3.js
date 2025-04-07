@@ -35,9 +35,13 @@ camera3.position.set(-0.2, 0, 10);
 // camera3.lookAt(1, 0, 9);
 // Renderer with standard settings
 const renderer3 = new THREE.WebGLRenderer({
-	antialias: !isLowEndDevice,
+	// antialias: !isLowEndDevice,
 	precision: isLowEndDevice ? 'highp' : 'highp',
 	powerPreference: 'high-performance',
+	antialias: true, // Enable antialiasing for mobile
+	precision: 'highp',
+	alpha: false, // Disable alpha for better performance
+	stencil: false,
 });
 // Use device's native pixel ratio
 const pixelRatio = Math.min(window.devicePixelRatio, 2);
