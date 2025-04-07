@@ -974,7 +974,7 @@ function closeHud(isChained = false) {
 		}
 
 		hudElement.style.opacity = '0';
-		hudElement.style.transform = 'translateY(20px)';
+		hudElement.style.transform = 'translateY(100%)';
 
 		setTimeout(() => {
 			hudElement.style.display = 'none';
@@ -1205,9 +1205,9 @@ function showInteractionText(message, hudId) {
 		// Modified styles for mobile interaction
 		Object.assign(interactionTextElement.style, {
 			position: isMobile ? 'sticky' : 'absolute',
-			bottom: isMobile ? '20px' : '11%',
-			left: isMobile ? '0' : '20%', // Center on mobile
-			transform: isMobile ? 'translateX(-50%)' : 'translate(0, 0)', // Center transform on mobile
+			bottom: '20px',
+			left: isMobile ? '0%' : '20px', // Center on mobile
+			transform: isMobile ? 'translateX(0, 0)' : 'translate(-50%, 0)', // Center transform on mobile
 			padding: isMobile ? '15px' : '30px',
 			textAlign: 'center',
 			borderRadius: '15px',
