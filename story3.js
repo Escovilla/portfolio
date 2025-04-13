@@ -6,6 +6,28 @@ loaded.innerHTML = 'Loading: Initializing...';
 let loadedModelsCount = 0;
 let activeHud = null;
 
+// Speaker toggle UI
+const speakerToggle = document.createElement('div');
+speakerToggle.id = 'speaker-toggle';
+Object.assign(speakerToggle.style, {
+	position: 'fixed',
+	bottom: '10px',
+	right: '10px',
+	zIndex: '1100',
+	background: 'rgba(0, 0, 0, 0.5)',
+	padding: '10px',
+	borderRadius: '50%',
+	color: 'white',
+	cursor: 'pointer',
+	fontSize: '20px',
+	width: '12px',
+	height: '12px',
+	display: 'flex',
+	alignItems: 'center',
+	justifyContent: 'center',
+});
+speakerToggle.innerHTML = '𝇉'; // initially muted
+
 const totalModels = 0;
 // Device capability detection - only detect truly low-end devices
 const isMobile =
@@ -71,7 +93,7 @@ const loadingManager = new THREE.LoadingManager(
 			setTimeout(() => {
 				loaderElement.style.display = 'none';
 				directions.style.display = 'block';
-
+				document.body.appendChild(speakerToggle);
 				setTimeout(() => {
 					directions.style.animation =
 						'fadeOut 0.5s ease-in-out forwards';
@@ -777,7 +799,7 @@ if (!isMobile) {
 	const grainShader = {
 		uniforms: {
 			tDiffuse: { value: null },
-			time: { value: 0.0 },
+			time: { value: 0.1 },
 			amount: { value: 0.1 },
 		},
 		vertexShader: `
@@ -928,7 +950,7 @@ function closeHud(isChained = false) {
 				const hudSoundSource = audioContext.createBufferSource();
 				hudSoundSource.buffer = openHudSound;
 				const gainNode = audioContext.createGain();
-				gainNode.gain.value = 2;
+				gainNode.gain.value = 0.5;
 				hudSoundSource
 					.connect(gainNode)
 					.connect(audioContext.destination);
@@ -1038,7 +1060,7 @@ function performHudOpen(hudId, hudElement) {
 			const hudSoundSource = audioContext.createBufferSource();
 			hudSoundSource.buffer = openHudSound;
 			const gainNode = audioContext.createGain();
-			gainNode.gain.value = 2;
+			gainNode.gain.value = 0.5;
 			hudSoundSource.connect(gainNode).connect(audioContext.destination);
 			hudSoundSource.start(0);
 		}
@@ -1638,7 +1660,7 @@ function animate3() {
 
 	// Update effects and render
 	if (!isLowEndDevice && grainPass) {
-		grainPass.uniforms.time.value += 0.01;
+		grainPass.uniforms.time.value += 0.0001;
 		composer.render();
 	} else {
 		renderer3.render(scene3, camera3);
@@ -1697,28 +1719,6 @@ let audioBuffer1, audioBuffer2;
 let sourceNode1, sourceNode2;
 let isPlaying = false;
 let openHudSound;
-// Speaker toggle UI
-const speakerToggle = document.createElement('div');
-speakerToggle.id = 'speaker-toggle';
-Object.assign(speakerToggle.style, {
-	position: 'fixed',
-	bottom: '10px',
-	right: '10px',
-	zIndex: '1100',
-	background: 'rgba(0, 0, 0, 0.5)',
-	padding: '10px',
-	borderRadius: '50%',
-	color: 'white',
-	cursor: 'pointer',
-	fontSize: '20px',
-	width: '12px',
-	height: '12px',
-	display: 'flex',
-	alignItems: 'center',
-	justifyContent: 'center',
-});
-speakerToggle.innerHTML = '𝇉'; // initially muted
-document.body.appendChild(speakerToggle);
 
 Promise.all([
 	fetch('./assets/audiomass-output.wav').then((res) => res.arrayBuffer()),
@@ -1753,6 +1753,11 @@ Promise.all([
 	});
 
 function playLoop() {
+	// Clean up existing nodes if they exist
+	if (sourceNode1) sourceNode1.disconnect();
+	if (sourceNode2) sourceNode2.disconnect();
+
+	// Create new nodes
 	sourceNode1 = audioContext.createBufferSource();
 	sourceNode1.buffer = audioBuffer1;
 	sourceNode1.loop = true;
@@ -1762,10 +1767,10 @@ function playLoop() {
 	sourceNode2.loop = true;
 
 	const gainNode1 = audioContext.createGain();
-	gainNode1.gain.value = 2;
+	gainNode1.gain.value = 1;
 
 	const gainNode2 = audioContext.createGain();
-	gainNode2.gain.value = 0.3; // slightly lower for alarm
+	gainNode2.gain.value = 0.1;
 
 	sourceNode1.connect(gainNode1).connect(audioContext.destination);
 	sourceNode2.connect(gainNode2).connect(audioContext.destination);
@@ -1784,7 +1789,8 @@ speakerToggle.addEventListener('click', () => {
 		try {
 			sourceNode1.stop();
 			sourceNode2.stop();
-			// Suspend the audio context to ensure all audio is stopped
+			sourceNode1.disconnect();
+			sourceNode2.disconnect();
 			audioContext.suspend();
 		} catch (error) {
 			console.error('Error stopping audio:', error);
