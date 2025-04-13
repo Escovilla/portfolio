@@ -34,6 +34,10 @@ canvas {
 	src: url('Hyper-Scrypt-master/fonts/HyperScrypt_Web/HyperScrypt-Stencil_web.ttf')
 		format('truetype');
 }
+@font-face {
+	font-family: 'hud'; /* Name the font */
+	src: url('minecraftia/Minecraftia-Regular.ttf') format('truetype');
+}
 #landing {
 	height: 130vh;
 }
@@ -198,17 +202,22 @@ progress::-moz-progress-bar {
 	}
 }
 .hud {
-	font-family: cool;
+	font-family: hud;
 	font-size: 26px !important;
 	width: 80%;
+	overflow-y: scroll;
+	overflow-x: hidden;
 	height: 80%;
 	border-radius: 30px;
 	position: absolute;
 	padding: 30px;
-	text-align: center;
+	line-height: 1.8;
+	word-spacing: 1;
+	word-spacing: 2.1px !important;
+	text-align: left;
 	border-radius: 15px;
 	background: transparent;
-	color: rgba(255, 250, 250, 0.644);
+	color: rgba(255, 250, 250, 0.744);
 	font-size: 18px;
 	font-weight: bold;
 	text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);

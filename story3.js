@@ -64,6 +64,8 @@ if (isMobile == true) {
 const loadingManager = new THREE.LoadingManager(
 	() => {
 		console.log('All assets loaded');
+		// Start playing music when everything is loaded
+
 		setTimeout(() => {
 			loaderElement.style.animation = 'fadeOut 0.5s ease-in-out forwards';
 			setTimeout(() => {
@@ -271,6 +273,15 @@ function addTouchControls() {
 		const deltaX = touch.clientX - lastTouchX;
 		const deltaY = touch.clientY - lastTouchY;
 
+		// Add minimum movement threshold (in pixels)
+		const minMovementThreshold = 0;
+		if (
+			Math.abs(deltaX) < minMovementThreshold &&
+			Math.abs(deltaY) < minMovementThreshold
+		) {
+			return;
+		}
+
 		// Update camera rotation
 		const euler = new THREE.Euler(0, 0, 0, 'YXZ');
 		euler.setFromQuaternion(camera3.quaternion);
@@ -462,7 +473,7 @@ document.addEventListener('mouseup', () => {
 document.addEventListener('mousemove', (e) => {
 	if (pressStarted) {
 		// Cancel the press if mouse moves too much
-		const moveThreshold = 5;
+		const moveThreshold = 10000;
 		if (
 			Math.abs(e.movementX) > moveThreshold ||
 			Math.abs(e.movementY) > moveThreshold
@@ -798,7 +809,7 @@ if (!isMobile) {
 	const bloomPass = new THREE.UnrealBloomPass(
 		new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2),
 		0.5,
-		0.4,
+		0.35,
 		0.1
 	);
 	composer.addPass(bloomPass);
@@ -912,6 +923,19 @@ function closeHud(isChained = false) {
 			return;
 		}
 
+		if (activeHud == 'about_me' || activeHud == 'projects') {
+			if (openHudSound && isPlaying) {
+				const hudSoundSource = audioContext.createBufferSource();
+				hudSoundSource.buffer = openHudSound;
+				const gainNode = audioContext.createGain();
+				gainNode.gain.value = 2;
+				hudSoundSource
+					.connect(gainNode)
+					.connect(audioContext.destination);
+				hudSoundSource.start(0);
+			}
+			hideInteractionText();
+		}
 		if (hudTransitionInProgress && !isChained) {
 			console.log(
 				'HUD transition already in progress, ignoring close request'
@@ -1009,6 +1033,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function performHudOpen(hudId, hudElement) {
 	// Ensure controls are disabled
+	if (hudId == 'about_me' || hudId == 'projects') {
+		if (openHudSound && isPlaying) {
+			const hudSoundSource = audioContext.createBufferSource();
+			hudSoundSource.buffer = openHudSound;
+			const gainNode = audioContext.createGain();
+			gainNode.gain.value = 2;
+			hudSoundSource.connect(gainNode).connect(audioContext.destination);
+			hudSoundSource.start(0);
+		}
+		hideInteractionText();
+	}
 	disableControls(hudId);
 
 	// Prepare element for animation
@@ -1606,7 +1641,9 @@ function animate3() {
 		grainPass.uniforms.time.value += 0.01;
 		composer.render();
 	} else {
-		composer.render();
+		renderer3.render(scene3, camera3);
+
+		// composer.render();
 	}
 }
 
@@ -1654,3 +1691,115 @@ window.addEventListener('blur', () => {
 
 // Start animation loop
 animate3();
+
+let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+let audioBuffer1, audioBuffer2;
+let sourceNode1, sourceNode2;
+let isPlaying = false;
+let openHudSound;
+// Speaker toggle UI
+const speakerToggle = document.createElement('div');
+speakerToggle.id = 'speaker-toggle';
+Object.assign(speakerToggle.style, {
+	position: 'fixed',
+	bottom: '10px',
+	right: '10px',
+	zIndex: '1100',
+	background: 'rgba(0, 0, 0, 0.5)',
+	padding: '10px',
+	borderRadius: '50%',
+	color: 'white',
+	cursor: 'pointer',
+	fontSize: '20px',
+	width: '12px',
+	height: '12px',
+	display: 'flex',
+	alignItems: 'center',
+	justifyContent: 'center',
+});
+speakerToggle.innerHTML = '𝇉'; // initially muted
+document.body.appendChild(speakerToggle);
+
+Promise.all([
+	fetch('./assets/audiomass-output.wav').then((res) => res.arrayBuffer()),
+	fetch('./assets/alarm.wav').then((res) => res.arrayBuffer()),
+	fetch('./assets/openhud.wav').then((res) => res.arrayBuffer()), // Add this line
+])
+	.then(([buffer1, buffer2, buffer3]) => {
+		// Add buffer3
+		return Promise.all([
+			audioContext.decodeAudioData(buffer1),
+			audioContext.decodeAudioData(buffer2),
+			audioContext.decodeAudioData(buffer3), // Add this line
+		]);
+	})
+	.then(([decoded1, decoded2, decoded3]) => {
+		// Add decoded3
+		audioBuffer1 = decoded1;
+		audioBuffer2 = decoded2;
+		openHudSound = decoded3;
+		// Auto-resume and play
+		audioContext
+			.resume()
+			.then(() => {
+				playLoop();
+				speakerToggle.innerHTML = '𝇈';
+				isPlaying = true;
+			})
+			.catch((error) => {
+				console.log('Autoplay prevented:', error);
+				speakerToggle.innerHTML = '𝇉';
+			});
+	});
+
+function playLoop() {
+	sourceNode1 = audioContext.createBufferSource();
+	sourceNode1.buffer = audioBuffer1;
+	sourceNode1.loop = true;
+
+	sourceNode2 = audioContext.createBufferSource();
+	sourceNode2.buffer = audioBuffer2;
+	sourceNode2.loop = true;
+
+	const gainNode1 = audioContext.createGain();
+	gainNode1.gain.value = 2;
+
+	const gainNode2 = audioContext.createGain();
+	gainNode2.gain.value = 0.3; // slightly lower for alarm
+
+	sourceNode1.connect(gainNode1).connect(audioContext.destination);
+	sourceNode2.connect(gainNode2).connect(audioContext.destination);
+
+	try {
+		sourceNode1.start(0);
+		sourceNode2.start(0);
+	} catch (error) {
+		console.error('Error starting audio:', error);
+	}
+}
+
+// Toggle music manually on click
+speakerToggle.addEventListener('click', () => {
+	if (isPlaying) {
+		try {
+			sourceNode1.stop();
+			sourceNode2.stop();
+			// Suspend the audio context to ensure all audio is stopped
+			audioContext.suspend();
+		} catch (error) {
+			console.error('Error stopping audio:', error);
+		}
+		speakerToggle.innerHTML = '𝇉';
+		isPlaying = false;
+	} else {
+		audioContext.resume().then(() => {
+			try {
+				playLoop();
+				speakerToggle.innerHTML = '𝇈';
+				isPlaying = true;
+			} catch (error) {
+				console.error('Error resuming audio:', error);
+			}
+		});
+	}
+});
