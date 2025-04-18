@@ -3,11 +3,29 @@
 
 <head>
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <title>Space Tin Can</title>
+
+    <link rel="preload" as="font" href="./assets/Hyper-Scrypt-master/fonts/HyperScrypt-Stencil_web.ttf" type="font/ttf" crossorigin="anonymous" fetchpriority="high">
+    <link rel="preload" as="font" href="./assets/minecraftia/Minecraftia-Regular.ttf" type="font/ttf" crossorigin="anonymous" fetchpriority="high">
+
+    <style>
+        @font-face {
+            font-family: 'HyperScrypt';
+            src: url('./assets/Hyper-Scrypt-master/fonts/HyperScrypt-Stencil_web.ttf') format('truetype');
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: 'Minecraftia';
+            src: url('./assets/minecraftia/Minecraftia-Regular.ttf') format('truetype');
+            font-display: swap;
+        }
+    </style>
+
+    <link rel="stylesheet" type="text/css" href="assets/css.css">
     <link rel="preload" as="image" href="./assets/sci-fi_information_panel/textures/body_metallicRoughness.png">
     <link rel="preload" as="image" href="./assets/spaceship_corridor/textures/01_-_Default_baseColor.png">
     <link rel="preload" as="image" href="./assets/spaceship_corridor/textures/01_-_Default_metallicRoughness.png">
@@ -19,22 +37,11 @@
     <link rel="preload" as="fetch" href="./assets/full_screen/scene.gltf" fetchpriority="high">
     <link rel="preload" as="fetch" href="./assets/sci-fi_information_panel/scene.gltf" fetchpriority="high">
 
-    <style>
-        .font-loading {
-            visibility: hidden;
-        }
 
-        .font-loaded {
-            visibility: visible;
-        }
-    </style>
-    <link rel="preload" as="font" href="./assets/Hyper-Scrypt-master/fonts/HyperScrypt_Web/HyperScrypt-Stencil_web.woff2" type="font/woff2" crossorigin="anonymous" fetchpriority="high">
-    <link rel="preload" as="font" href="./assets/minecraftia/Minecraftia-Regular.woff2" type="font/woff2" crossorigin="anonymous" fetchpriority="high">
-    <link rel="stylesheet" type="text/css" href="assets/css.css">
 </head>
 
 <body id="bod">
-    <div id="loader" style="font-family: 'cool';">Loading...
+    <div id="loader" style="font-family: 'HyperScrypt';">Loading...
         </br>
         <div id="loaded" style="font-size: 10px !important; color: gray;"></div>
         <progress id="file" max="100"> </progress>
