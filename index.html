@@ -8,7 +8,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <title>Space Tin Can</title>
-    <link rel="preload" as="font" href="./assets/Hyper-Scrypt-master/fonts/HyperScrypt_Web/HyperScrypt-Stencil_web.ttf" type="font/ttf" crossorigin="anonymous" fetchpriority="high">
 
     <link rel="stylesheet" type="text/css" href="assets/css.css">
     <link rel="preload" as="image" href="./assets/sci-fi_information_panel/textures/body_metallicRoughness.png">
@@ -22,6 +21,17 @@
     <link rel="preload" as="fetch" href="./assets/full_screen/scene.gltf" fetchpriority="high">
     <link rel="preload" as="fetch" href="./assets/sci-fi_information_panel/scene.gltf" fetchpriority="high">
 
+    <style>
+        .font-loading {
+            visibility: hidden;
+        }
+
+        .font-loaded {
+            visibility: visible;
+        }
+    </style>
+    <link rel="preload" as="font" href="./assets/Hyper-Scrypt-master/fonts/HyperScrypt_Web/HyperScrypt-Stencil_web.woff2" type="font/woff2" crossorigin="anonymous" fetchpriority="high">
+    <link rel="preload" as="font" href="./assets/minecraftia/Minecraftia-Regular.woff2" type="font/woff2" crossorigin="anonymous" fetchpriority="high">
 
 </head>
 
@@ -40,19 +50,13 @@
         <div id="about_me" class="hud">
             <div class="close-hud">×</div>
 
-            Hey, I’m Nico! I make things. Sometimes they even work.
+            Hey, I'm Nico. I make things—sometimes weird, sometimes questionably functional—but always with a spark of curiosity.
 
-            I’m an engineer at heart, a software developer by trade, and a full-time Sci-Fi nerd.
-            If it involves microcontrollers, blinking lights, or stuff that moves when I tell it to, I’m in
-            Basically, if it goes beep boop, I probably love it.<br><br>
+            At my core, I'm an engineer with a soft spot for software, hardware, and the occasional robot rebellion. If it blinks, whirs, clicks, or goes beep boop, I'm probably knee-deep in it. Microcontrollers, custom builds, moving parts—I live for the challenge of making machines dance.<br><br>
 
-            I build things that (hopefully) impress fellow humans, and make people say “wait, you made that?”
-            I’m always learning, tinkering, and occasionally breaking things in the name of progress.<br><br>
+            I build things that make people pause and ask, "Wait… you made that?" Whether it's a side project that turned into a rabbit hole or a tool someone actually finds useful, I'm constantly learning, tinkering, and pushing boundaries (usually while breaking a few things along the way).<br>
 
-            This site? It’s my brain in spaceship form.
-            Take a walk down the corridor, press some buttons, maybe even get sucked into a black hole.
-            It’s how I express what’s on my mind and share it with the world.
-
+            This site? Think of it as my brain in spaceship form—part lab, part logbook, part black hole of ideas. Explore at your own risk. You might just find something that makes you say, "Whoa."<br>
         </div>
         <div id="projects" class="hud">
             <div class="close-hud">×</div>
